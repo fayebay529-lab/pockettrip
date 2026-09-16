@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pockettrip 3.0 — Interactive Travel Companion</title>
+
+<!-- Grounded & Organic Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* Earthy, Grounded & Natural Palette */
+  --bg-color: #f4f1ea;
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(138, 122, 90, 0.08) 0%, transparent 40%),
+                 radial-gradient(circle at 90% 80%, rgba(92, 118, 98, 0.08) 0%, transparent 40%),
+                 radial-gradient(circle at 50% 50%, rgba(196, 123, 89, 0.06) 0%, transparent 60%),
+                 linear-gradient(135deg, #f4f1ea 0%, #e8e2d5 100%);
+  
+  --surface: rgba(251, 249, 244, 0.92); 
+  --surface-solid: #fcfbf7;
+  --surface2: #e8e2d5; 
+  --text: #2c2825; 
+  --muted: #6e675f;
+  --line: rgba(184, 175, 160, 0.5);
+  --line-bold: #c2b8a3;
+  
+  /* Natural Earth Accents */
+  --terracotta: #c47b59;
+  --sage: #5c7662;
+  --sand: #d6be96;
+  --forest: #384d3e;
+  --forest-dark: #27372b;
+  --clay: #a65b38;
+
+  /* Organic Tactile Shadows & Soft Card Effects */
+  --shadow-subtle: 0 4px 12px rgba(44, 40, 37, 0.03);
+  --shadow-card: 0 10px 24px rgba(44, 40, 37, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 16px 28px rgba(44, 40, 37, 0.1), 0 0 0 2px var(--sand);
+  --shadow-inset: inset 0 2px 4px rgba(44, 40, 37, 0.04);
+  --glass-blur: blur(12px);
+}
+
+* { box-sizing: border-box; }
+
+body { 
+  margin: 0; 
+  background-color: var(--bg-color);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text); 
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; 
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Organic Speckle Texture Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  opacity: 0.18;
+  z-index: 999;
+  background-image: radial-gradient(var(--muted) 0.5px, transparent 0.5px);
+  background-size: 28px 28px;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+
+/* Auth Screen Overlay */
+.auth-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: var(--bg-color);
+  background-image: var(--bg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.auth-card {
+  background: var(--surface-solid);
+  border: 2px solid var(--line-bold);
+  border-radius: 24px;
+  width: min(420px, 90vw);
+  padding: 36px 32px;
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+.auth-card h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  margin: 12px 0 6px;
+  color: var(--forest);
+}
+.auth-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line-bold);
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  outline: none;
+}
+.auth-input:focus {
+  border-color: var(--forest);
+  background: #ffffff;
+}
+
+.app { display: flex; min-height: 100vh; }
+.sidebar { 
+  width: 270px; 
+  background: rgba(244, 241, 234, 0.85); 
+  backdrop-filter: var(--glass-blur);
+  border-right: 1.5px solid var(--line-bold); 
+  padding: 28px 20px; 
+  position: sticky; 
+  top: 0; 
+  height: 100vh; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: space-between; 
+  box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+  z-index: 100;
+}
+
+/* Mobile Header & Drawer Navigation System */
+.mobile-header {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(244, 241, 234, 0.95);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1.5px solid var(--line-bold);
+  position: sticky;
+  top: 0;
+  z-index: 150;
+}
+
+.mobile-menu-btn {
+  background: var(--surface-solid);
+  border: 1.5px solid var(--line-bold);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-subtle);
+}
+
+.mobile-drawer-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(44, 40, 37, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-drawer-backdrop.active {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0; left: -290px;
+  width: 280px;
+  height: 100vh;
+  background: var(--surface-solid);
+  border-right: 2px solid var(--line-bold);
+  padding: 24px 20px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 8px 0 24px rgba(0,0,0,0.15);
+}
+
+.mobile-drawer-backdrop.active .mobile-drawer {
+  transform: translateX(290px);
+}
+
+/* Brand Logo Styling */
+.logo { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  text-decoration: none;
+}
+.brand-icon-svg {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 3px 6px rgba(56, 77, 62, 0.2));
+}
+.logo:hover .brand-icon-svg {
+  transform: rotate(-6deg) scale(1.08);
+}
+.logo-text {
+  font-family: 'Fraunces', serif;
+  font-weight: 700; 
+  font-size: 26px; 
+  letter-spacing: -0.5px; 
+  color: var(--forest); 
+  line-height: 1;
+}
+.logo-text span { color: var(--terracotta); }
+
+.nav button { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  width: 100%; 
+  border: 1.5px solid transparent; 
+  background: transparent; 
+  padding: 12px 18px; 
+  border-radius: 12px; 
+  color: var(--text); 
+  text-align: left; 
+  margin: 6px 0; 
+  font-weight: 600; 
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+}
+.nav button.active, .nav button:hover { 
+  background: var(--surface-solid); 
+  border-color: var(--line-bold); 
+  box-shadow: var(--shadow-subtle); 
+  color: var(--forest);
+  transform: translateX(3px);
+}
+
+.side-note { 
+  padding: 16px; 
+  border-radius: 14px; 
+  background: rgba(232, 226, 213, 0.5); 
+  border: 1.5px dashed var(--sage); 
+  font-size: 13px; 
+  color: var(--text); 
+  line-height: 1.5; 
+  font-weight: 500;
+}
+
+.main { flex: 1; min-width: 0; }
+.topbar { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 18px 36px; 
+  border-bottom: 1.5px solid var(--line-bold); 
+  background: rgba(244, 241, 234, 0.85); 
+  backdrop-filter: var(--glass-blur); 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; 
+}
+.search { 
+  border: 1.5px solid var(--line-bold); 
+  background: var(--surface-solid); 
+  border-radius: 12px; 
+  padding: 10px 18px; 
+  width: min(360px,50vw); 
+  outline: none; 
+  transition: all 0.2s; 
+  font-weight: 500; 
+  box-shadow: var(--shadow-inset);
+}
+.search:focus { border-color: var(--forest); background: #ffffff; box-shadow: 0 0 0 3px rgba(56, 77, 62, 0.15); }
+
+.top-actions { display: flex; gap: 12px; align-items: center; }
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--line-bold);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+.btn { 
+  border: 1.5px solid var(--line-bold); 
+  background: var(--surface-solid); 
+  padding: 10px 20px; 
+  border-radius: 12px; 
+  color: var(--text); 
+  font-weight: 700; 
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+  box-shadow: var(--shadow-subtle); 
+}
+.btn:hover { 
+  background: #ffffff;
+  transform: translateY(-2px); 
+  box-shadow: var(--shadow-card); 
+  border-color: var(--forest);
+}
+.btn:active { transform: translateY(0); }
+.btn.primary { background: var(--forest); color: #ffffff; border-color: var(--forest); }
+.btn.primary:hover { background: var(--forest-dark); border-color: var(--forest-dark); }
+.btn.soft { background: var(--terracotta); color: #ffffff; border-color: var(--terracotta); }
+.btn.soft:hover { background: var(--clay); border-color: var(--clay); }
+.btn.danger { background: #a64238; color: #fff; border-color: transparent; }
+.btn.danger:hover { background: #883229; }
+.btn.sm { padding: 6px 14px; font-size: 12px; border-radius: 8px; }
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.btn-close:hover {
+  background: rgba(166, 66, 56, 0.1);
+  color: #a64238;
+  opacity: 1;
+}
+
+.content { padding: 36px; max-width: 1280px; margin: auto; }
+.hero { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; }
+.eyebrow { text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; color: var(--terracotta); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+h1 { font-family: 'Fraunces', serif; font-size: 38px; letter-spacing: -0.5px; margin: 4px 0 8px; font-weight: 700; color: var(--text); }
+.subtitle { color: var(--muted); margin: 0; font-size: 15px; font-weight: 500; }
+
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
+.card { background: var(--surface); backdrop-filter: var(--glass-blur); border: 1.5px solid var(--line-bold); border-radius: 18px; box-shadow: var(--shadow-card); }
+
+/* Collaborator Pills & Avatars */
+.collaborator-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.collab-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #fff;
+  box-shadow: var(--shadow-subtle);
+  text-transform: uppercase;
+}
+
+/* Day Card Accordions & Headers */
+.day-group { margin-bottom: 24px; }
+.day-header-title { font-size: 14px; font-weight: 700; letter-spacing: 1px; color: var(--forest); text-transform: uppercase; margin-bottom: 8px; padding-left: 4px; font-family: 'JetBrains Mono', monospace; }
+.day-card { border: 1.5px solid var(--line-bold); border-radius: 18px; background: var(--surface); backdrop-filter: var(--glass-blur); overflow: hidden; box-shadow: var(--shadow-subtle); transition: all 0.2s; }
+.day-summary-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 22px; cursor: pointer; background: transparent; user-select: none; border-bottom: 1.5px solid transparent; transition: background 0.2s ease; }
+.day-summary-header:hover { background: rgba(252, 251, 247, 0.8); }
+.day-card.open .day-summary-header { border-bottom-color: var(--line-bold); background: rgba(252, 251, 247, 0.8); }
+.day-title-row { display: flex; align-items: center; gap: 18px; flex: 1; }
+
+.calendar-box {
+  width: 64px;
+  height: 64px;
+  background: var(--sage);
+  border: 1.5px solid var(--surface-solid);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(92, 118, 98, 0.2);
+  flex-shrink: 0;
+}
+.calendar-box .cal-input {
+  width: 100%;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  outline: none;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+}
+.calendar-box .cal-top {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding-top: 2px;
+  opacity: 0.9;
+}
+.calendar-box .cal-body {
+  font-size: 18px;
+  padding-bottom: 2px;
+}
+
+.day-title-input { max-width: 300px; width: 100%; }
+.summary-highlights { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.highlight-pill { background: rgba(92, 118, 98, 0.12); color: var(--forest); font-size: 11px; padding: 4px 10px; border-radius: 8px; font-weight: 700; border: 1px solid rgba(92, 118, 98, 0.2); }
+
+.day-detail-body { display: none; padding: 22px 26px; background: rgba(244, 241, 234, 0.4); }
+.day-card.open .day-detail-body { display: block; }
+
+.timeline-item { display: grid; grid-template-columns: 110px 1fr auto; gap: 16px; padding: 14px 0; border-top: 1.5px dashed var(--line); align-items: center; }
+.timeline-item:first-child { border-top: 0; }
+.time-tag { background: #e8e2d5; color: var(--forest); font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 8px; text-align: center; border: 1px solid var(--line-bold); font-family: 'JetBrains Mono', monospace; }
+
+/* Trip Cards */
+.trip-card { overflow: hidden; transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; border: 1.5px solid var(--line-bold); position: relative; }
+.trip-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--forest); }
+.cover { height: 160px; position: relative; overflow: hidden; padding: 20px; display: flex; align-items: flex-start; justify-content: space-between; background: linear-gradient(135deg, #5c7662, #8a7a5a); background-size: cover; background-position: center; border-bottom: 1.5px solid var(--line-bold); }
+.flag { font-size: 48px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
+.flag img { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+.status-pill { background: rgba(251, 249, 244, 0.92); backdrop-filter: blur(4px); padding: 5px 12px; border-radius: 14px; font-size: 11px; font-weight: 700; color: var(--forest); border: 1px solid var(--line-bold); box-shadow: var(--shadow-subtle); }
+
+.edit-cover-btn {
+  background: rgba(251, 249, 244, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(194, 184, 163, 0.6);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  z-index: 5;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+.edit-cover-btn:hover { 
+  background: rgba(251, 249, 244, 0.95); 
+  border-color: var(--forest); 
+  transform: scale(1.08); 
+  opacity: 1; 
+  color: var(--forest);
+}
+
+.trip-body { padding: 22px; position: relative; }
+.trip-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.trip-header-row h3 { margin: 0; font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; flex: 1; }
+.trip-meta { color: var(--muted); font-size: 13px; font-weight: 500; }
+
+.section-title { display: flex; justify-content: space-between; align-items: center; margin: 36px 0 18px; }
+.section-title h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0; font-weight: 600; color: var(--forest); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.stat { padding: 20px; border-radius: 18px; background: var(--surface); backdrop-filter: var(--glass-blur); border: 1.5px solid var(--line-bold); box-shadow: var(--shadow-subtle); transition: transform 0.2s ease; }
+.stat:hover { transform: translateY(-2px); }
+.stat .num { font-size: 32px; font-weight: 700; color: var(--terracotta); font-family: 'Fraunces', serif; }
+.stat small { color: var(--muted); font-weight: 700; font-size: 10px; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+
+/* Header Inline Stat Boxes */
+.header-stat-box {
+  background: var(--surface-solid);
+  border: 1.5px solid var(--line-bold);
+  border-radius: 12px;
+  padding: 6px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: var(--shadow-subtle);
+  min-width: 105px;
+}
+.header-stat-box .num {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--terracotta);
+  line-height: 1.1;
+}
+.header-stat-box small {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+}
+
+/* Editable Icon Selector Top Header */
+.trip-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 24px; }
+.trip-title { display: flex; gap: 20px; align-items: flex-start; flex: 1; }
+
+.editable-icon-btn {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  background: var(--surface-solid);
+  border: 2px dashed var(--terracotta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow: hidden;
+  box-shadow: var(--shadow-subtle);
+  flex-shrink: 0;
+  position: relative;
+}
+.editable-icon-btn:hover {
+  border-color: var(--forest);
+  transform: scale(1.04);
+  background: #ffffff;
+  box-shadow: var(--shadow-card);
+}
+.editable-icon-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.editable-icon-btn::after {
+  content: "✏️";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 11px;
+  background: rgba(251, 249, 244, 0.9);
+  padding: 2px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Condensed & Stable Tabs Bar Layout */
+.tabs-container { 
+  display: flex; 
+  flex-wrap: wrap; 
+  align-items: center; 
+  gap: 6px; 
+  border-bottom: 1.5px solid var(--line-bold); 
+  margin: 0 0 16px 0; 
+  padding: 0 0 12px 0; 
+}
+.tab-btn { 
+  white-space: nowrap; 
+  border: 1.5px solid var(--line-bold); 
+  background: var(--surface-solid); 
+  padding: 6px 12px; 
+  color: var(--text); 
+  font-weight: 600; 
+  font-size: 13px; 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  cursor: pointer; 
+  transition: all 0.15s ease; 
+  border-radius: 10px; 
+  box-shadow: var(--shadow-subtle); 
+}
+.tab-btn:hover { 
+  background: #ffffff; 
+  border-color: var(--forest); 
+}
+.tab-btn.active { 
+  background: var(--forest); 
+  color: #ffffff; 
+  border-color: var(--forest); 
+  box-shadow: 0 4px 10px rgba(56, 77, 62, 0.2); 
+}
+.tab-btn.dragging { opacity: 0.4; background: var(--surface2); }
+.tab-btn .drag-handle { cursor: grab; opacity: 0.4; font-size: 12px; margin-right: 2px; }
+
+.panel { margin-top: 26px; }
+
+/* Inputs & Form Styling */
+.editable-text { width: 100%; border: 1.5px solid transparent; border-radius: 8px; padding: 6px 10px; font: inherit; background: transparent; transition: all 0.15s; }
+.editable-text:hover { border-color: var(--line-bold); background: rgba(255,255,255,0.7); }
+.editable-text:focus { border-color: var(--forest); background: #ffffff; outline: none; box-shadow: 0 0 0 3px rgba(56, 77, 62, 0.12); }
+/* Trip-cover title and dates: the edit background is white, so force dark typed text while editing. */
+.trip-cover-banner input.editable-text:focus,
+.trip-cover-banner input.editable-text:active {
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+  text-shadow: none !important;
+  background: #ffffff !important;
+  caret-color: var(--text) !important;
+}
+
+.tag-select { border: 1.5px solid var(--line-bold); background: #ffffff; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--forest); cursor: pointer; outline: none; }
+
+/* Route Finder & Maps */
+.route-section { background: var(--surface); backdrop-filter: var(--glass-blur); border: 1.5px solid var(--line-bold); border-radius: 18px; margin-bottom: 18px; overflow: hidden; box-shadow: var(--shadow-subtle); }
+.route-section-header { padding: 18px 22px; background: rgba(252, 251, 247, 0.6); border-bottom: 1.5px solid var(--line-bold); cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+.route-section-body { padding: 22px; display: none; }
+.route-section.open .route-section-body { display: block; }
+
+.route-finder-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end; margin-top: 12px; }
+.saved-route-card { background: var(--surface-solid); border: 1.5px solid var(--line-bold); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-subtle); transition: all 0.2s ease; cursor: pointer; }
+.saved-route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); border-color: var(--forest); }
+.gmaps-frame { width: 100%; height: 420px; border: 1.5px solid var(--line-bold); border-radius: 18px; margin-bottom: 24px; box-shadow: var(--shadow-card); }
+
+/* Transit Cards */
+.transit-card { padding: 22px; margin-bottom: 18px; background: var(--surface-solid); border: 1.5px solid var(--line-bold); border-radius: 18px; box-shadow: var(--shadow-subtle); }
+.transit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.transit-route-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; background: #e8e2d5; border: 1.5px solid var(--line-bold); padding: 16px; border-radius: 14px; align-items: center; margin-top: 10px; }
+.station-box { display: flex; flex-direction: column; gap: 2px; }
+.station-box label { font-size: 10px; font-weight: 700; color: var(--forest); text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+
+/* Budget UI with Clean High-Legibility Fonts */
+.budget-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
+.budget-card { padding: 22px; background: var(--surface); backdrop-filter: var(--glass-blur); border: 1.5px solid var(--line-bold); border-radius: 18px; box-shadow: var(--shadow-subtle); }
+.budget-card .amount { font-size: 28px; font-weight: 700; margin-top: 6px; font-family: 'Fraunces', serif; }
+.expense-item { display: grid; grid-template-columns: 1fr 120px 120px auto; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1.5px dashed var(--line); }
+
+/* Collapsible Packing Lists */
+.packing-details {
+  background: var(--surface);
+  border: 1.5px solid var(--line-bold);
+  border-radius: 18px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-subtle);
+}
+.packing-summary {
+  padding: 16px 22px;
+  background: rgba(252, 251, 247, 0.8);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+.packing-summary:hover {
+  background: rgba(252, 251, 247, 1);
+}
+.packing-details[open] .packing-summary {
+  border-bottom: 1.5px solid var(--line-bold);
+}
+.packing-body {
+  padding: 20px 22px;
+}
+.packing-title-input {
+  max-width: 240px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+
+/* Checklists */
+.checklist-item { display: flex; align-items: center; gap: 14px; padding: 12px 18px; background: var(--surface-solid); border: 1.5px solid var(--line-bold); border-radius: 12px; margin-bottom: 10px; box-shadow: var(--shadow-subtle); transition: all 0.2s ease; }
+.checklist-item:hover { border-color: var(--forest); }
+.checklist-item.done { background: rgba(232, 226, 213, 0.4); opacity: 0.75; }
+.checklist-item.done .editable-text { text-decoration: line-through; }
+.custom-checkbox { width: 20px; height: 20px; border-radius: 6px; accent-color: var(--forest); cursor: pointer; }
+
+/* Saved Places COMPACT CARD GRID (Optimized layout) */
+.compact-places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.place-card-compact {
+  background: var(--surface-solid);
+  border: 1.5px solid var(--line-bold);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow-subtle);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.place-card-compact:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
+  border-color: var(--forest);
+}
+.place-card-compact .place-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Journal & Photo Card Layouts */
+.journal-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
+.journal-card { background: var(--surface-solid); border: 1.5px solid var(--line-bold); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-card); }
+.journal-img-wrapper { height: 145px; position: relative; background: var(--surface2); border-bottom: 1.5px solid var(--line-bold); }
+.journal-img { width: 100%; height: 100%; object-fit: cover; min-width:0; }
+.camera-upload-btn { position: absolute; bottom: 14px; right: 14px; background: #ffffff; border: 1.5px solid var(--forest); border-radius: 10px; padding: 8px 14px; font-weight: 700; font-size: 12px; color: var(--forest); cursor: pointer; box-shadow: var(--shadow-card); transition: transform 0.2s; }
+.camera-upload-btn:hover { transform: scale(1.03); }
+.journal-body { padding: 16px; }
+.journal-body .editable-text { background:var(--surface-solid); border-color:var(--line); }
+.journal-body .editable-text:hover { border-color:var(--line-bold); background:var(--surface-solid); }
+
+/* Journal carousel + editing */
+.journal-carousel{height:260px;position:relative;background:var(--surface2);overflow:hidden}
+.journal-carousel-image{width:100%;height:100%;object-fit:cover;display:block}
+.journal-no-photo{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:30px}
+.journal-no-photo span{font-size:12px}
+.journal-carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.88);color:var(--forest);font-size:28px;line-height:28px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.16)}
+.journal-carousel-arrow.left{left:10px}.journal-carousel-arrow.right{right:10px}
+.journal-photo-count{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.58);color:#fff;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700}
+.journal-dots{display:flex;justify-content:center;gap:5px;padding:8px 0 2px;background:var(--surface-solid)}
+.journal-dot{width:6px;height:6px;border:0;border-radius:50%;padding:0;background:var(--line-bold);cursor:pointer}.journal-dot.active{background:var(--forest);transform:scale(1.25)}
+.journal-entry-label{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--forest)}
+.journal-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.journal-edit-grid label,.journal-summary-label{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.journal-summary{width:100%;box-sizing:border-box;min-height:82px;resize:vertical;font-size:14px;line-height:1.45}
+.journal-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.journal-delete-photo{padding:5px 8px;font-size:11px}
+.journal-photo-strip{display:flex;gap:6px;overflow-x:auto;padding-top:10px;margin-top:10px;border-top:1px solid var(--line)}
+.journal-thumb{width:48px;height:48px;flex:0 0 48px;padding:2px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface-solid);cursor:pointer;overflow:hidden}.journal-thumb.active{border-color:var(--forest)}.journal-thumb img{width:100%;height:100%;object-fit:cover;border-radius:5px}
+@media(max-width:650px){.journal-edit-grid{grid-template-columns:1fr}.journal-carousel{height:230px}}
+
+/* Specific packed outfit picker */
+.outfit-specific{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.outfit-specific-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:800;color:var(--forest);margin-bottom:8px}
+.outfit-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.outfit-choice{display:flex;flex-direction:column;gap:4px}.outfit-choice-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.outfit-choice select{width:100%;font-size:12px;padding:7px 8px}
+@media(max-width:650px){.outfit-choice-grid{grid-template-columns:1fr}}
+
+/* Outfit Planner */
+.outfit-legend{margin:0 0 16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);font-size:12px;line-height:1.8}
+.outfit-packed-chip{display:inline-block;margin:3px 4px 3px 0;padding:3px 8px;border-radius:999px;background:var(--surface-solid);border:1px solid var(--line);font-size:11px}
+.outfit-packed-chip.packed{border-color:var(--forest)}
+.outfit-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.outfit-day-card{background:var(--surface-solid);border:1.5px solid var(--line-bold);border-radius:16px;padding:16px;box-shadow:var(--shadow-subtle)}
+.outfit-day-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.outfit-date{font-family:'Fraunces',serif;font-size:20px;font-weight:700}.outfit-place{font-size:12px;color:var(--muted);margin-top:2px}
+.outfit-location{display:flex;flex-direction:column;gap:4px;min-width:150px}.outfit-location label{font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:800;color:var(--muted)}
+.outfit-weather{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);margin-bottom:12px}
+.outfit-weather-main{display:flex;align-items:center;gap:9px}.outfit-weather-icon{font-size:28px}.outfit-weather-main strong{display:block;font-size:18px}.outfit-weather-main span:not(.outfit-weather-icon){display:block;font-size:11px;color:var(--muted)}
+.outfit-weather-stats{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:11px}.outfit-weather-stats small{font-size:9px;color:var(--muted)}
+.outfit-weather-empty{justify-content:flex-start}.outfit-weather-empty>span{font-size:24px}.outfit-weather-empty strong{display:block;font-size:13px}.outfit-weather-empty div span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.outfit-suggestion{border-top:1px solid var(--line);padding-top:11px}.outfit-suggestion-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:800;color:var(--forest);margin-bottom:7px}.outfit-recs{display:flex;flex-wrap:wrap;gap:6px}.outfit-rec{padding:6px 9px;border-radius:9px;border:1px solid var(--line);font-size:11px;background:var(--surface2)}.outfit-rec.available{border-color:var(--forest)}.outfit-rec.missing{border-style:dashed;color:var(--muted)}.outfit-criteria{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.outfit-criterion{padding:5px 8px;border-radius:9px;background:var(--surface2);border:1px solid var(--line);font-size:10px;color:var(--text)}.outfit-person{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}.outfit-person-name{font-size:11px;font-weight:800;color:var(--forest);margin-bottom:6px}.outfit-option-grid{display:grid;gap:6px}.outfit-option-row{display:grid;grid-template-columns:minmax(125px,.75fr) minmax(0,1.25fr);gap:7px;align-items:center}.outfit-option-row.core{padding-top:2px}.outfit-option-row.weather{border-top:1px solid var(--line);padding-top:6px;margin-top:2px}.outfit-option-label{font-size:10px;font-weight:700;color:var(--text)}.outfit-option-label small{display:block;color:var(--muted);font-weight:600;margin-top:1px}.outfit-option-row select{width:100%;font-size:10px;padding:6px 7px;border:1px solid var(--line-bold);border-radius:8px;background:#fff;color:var(--text)}.outfit-gap{font-size:10px;color:var(--muted);padding:6px 8px;border:1px dashed var(--line-bold);border-radius:8px}
+@media(max-width:800px){.outfit-days{grid-template-columns:1fr}.outfit-day-head{flex-direction:column}.outfit-location{width:100%}.outfit-weather{align-items:flex-start;flex-direction:column}.outfit-weather-stats{align-items:flex-start}}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(44, 40, 37, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-card {
+  background: var(--surface-solid);
+  border: 2px solid var(--forest);
+  border-radius: 22px;
+  width: min(520px, 92vw);
+  padding: 28px;
+  box-shadow: var(--shadow-hover);
+  transform: scale(0.95);
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.modal-overlay.open .modal-card {
+  transform: scale(1);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.modal-header h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  margin: 0;
+  color: var(--forest);
+}
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--surface2);
+  border-radius: 14px;
+  border: 1.5px solid var(--line-bold);
+  margin-bottom: 20px;
+}
+.emoji-option {
+  font-size: 28px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1.5px solid var(--line-bold);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.emoji-option:hover {
+  transform: scale(1.15);
+  border-color: var(--forest);
+  box-shadow: var(--shadow-card);
+  z-index: 2;
+}
+.custom-icon-input {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.color-swatch-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.color-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 2px solid var(--line-bold);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.color-swatch:hover { transform: scale(1.1); }
+
+.toast { position: fixed; right: 28px; bottom: 28px; background: var(--forest); color: #ffffff; padding: 12px 22px; border-radius: 12px; display: none; z-index: 100; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-card); }
+
+@media(max-width:900px){
+  .sidebar { display: none; }
+  .mobile-header { display: flex; }
+  .topbar { padding: 14px 20px; flex-direction: column; gap: 12px; align-items: stretch; }
+  .top-actions { justify-content: space-between; flex-wrap: wrap; }
+  .search { width: 100%; }
+  .content { padding: 20px 16px; }
+  .hero { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .grid, .journal-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .stats, .budget-grid { grid-template-columns: repeat(2, 1fr); }
+  .transit-route-grid, .route-finder-grid { grid-template-columns: 1fr; gap: 10px; }
+  .expense-item { grid-template-columns: 1fr auto; }
+  .trip-head { flex-direction: column; gap: 14px; }
+}
+@media(max-width:600px){
+  .grid, .budget-grid, .journal-grid, .compact-places-grid { grid-template-columns: 1fr; }
+  .timeline-item { grid-template-columns: 90px 1fr auto; }
+  .emoji-grid { grid-template-columns: repeat(4, 1fr); }
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat { padding: 14px; }
+  .stat .num { font-size: 24px; }
+}
+
+.trip-cities-header{margin-top:14px;padding:12px 14px;background:rgba(232,226,213,.42);border:1.5px solid var(--line-bold);border-radius:14px}
+.trip-cities-title{font-size:10px;font-weight:800;color:var(--forest);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.trip-city-list{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.trip-city-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-solid);border:1px solid var(--line-bold);border-radius:999px;padding:3px 5px 3px 10px;box-shadow:var(--shadow-subtle)}
+.trip-city-name{border:0;background:transparent;padding:3px 2px;font:inherit;font-size:12px;font-weight:800;color:var(--forest);cursor:pointer}
+.trip-city-name:hover{text-decoration:underline}
+.trip-city-remove{border:0;background:transparent;color:var(--muted);font-size:14px;line-height:1;cursor:pointer;padding:2px 4px;border-radius:5px}
+.trip-city-remove:hover{background:rgba(166,66,56,.1);color:#a64238}
+
+.trip-cover-banner{position:relative;min-height:210px;border-radius:24px;overflow:hidden;display:flex;align-items:flex-end;padding:18px;color:#fff;margin-bottom:14px;background-size:cover;background-position:center;box-shadow:var(--shadow-card);border:1.5px solid var(--line-bold)}
+.trip-cover-banner::before{content:"";position:absolute;inset:0;pointer-events:none}
+.trip-cover-banner>*{position:relative;z-index:1}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- Authentication Modal/Overlay -->
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-card">
+    <div style="font-size: 48px; margin-bottom: 8px">🧳</div>
+    <h2>Welcome to Pockettrip</h2>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px">Sign in or create an account to access your trips.</p>
+    
+    <input type="text" id="auth-username" class="auth-input" placeholder="Email address">
+    <input type="password" id="auth-password" class="auth-input" placeholder="Password">
+    
+    <div style="display: flex; gap: 10px; margin-top: 8px">
+      <button class="btn primary" style="flex:1" onclick="handleAuth('login')">Log In</button>
+      <button class="btn soft" style="flex:1" onclick="handleAuth('signup')">Sign Up</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Drawer Navigation System -->
+<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="toggleMobileDrawer(false)">
+  <div class="mobile-drawer" onclick="event.stopPropagation()">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <a href="#" class="logo" onclick="toggleMobileDrawer(false); showHome(); return false;">
+          <svg class="brand-icon-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" rx="16" fill="#384D3E"/>
+            <path d="M26 15C26 12.7909 27.7909 11 30 11H34C36.2091 11 38 12.7909 38 15V18H26V15Z" fill="#D6BE96" stroke="#27372B" stroke-width="1.5"/>
+            <rect x="12" y="18" width="40" height="34" rx="7" fill="#C47B59"/>
+            <path d="M12 25C12 21.134 15.134 18 19 18H12V25Z" fill="#A65B38"/>
+            <path d="M52 25C52 21.134 48.866 18 45 18H52V25Z" fill="#A65B38"/>
+            <path d="M12 45C12 48.866 15.134 52 19 52H12V45Z" fill="#A65B38"/>
+            <path d="M52 45C52 48.866 48.866 52 45 52H52V45Z" fill="#A65B38"/>
+            <rect x="22" y="18" width="4" height="34" fill="#384D3E" opacity="0.85"/>
+            <rect x="38" y="18" width="4" height="34" fill="#384D3E" opacity="0.85"/>
+            <circle cx="24" cy="35" r="1.5" fill="#D6BE96"/>
+            <circle cx="40" cy="35" r="1.5" fill="#D6BE96"/>
+            <rect x="25" y="24" width="14" height="18" rx="2.5" fill="#FCFBF7" stroke="#384D3E" stroke-width="1.2"/>
+            <path d="M27.5 28.5L29 30L32 27" stroke="#5C7662" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="28" y1="33" x2="36" y2="33" stroke="#A65B38" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="28" y1="37" x2="34" y2="37" stroke="#A65B38" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="44" cy="22" r="7.5" fill="#FCFBF7" stroke="#384D3E" stroke-width="1.5"/>
+            <polygon points="44,16.5 46,22 44,20.5 42,22" fill="#C47B59"/>
+            <polygon points="44,27.5 46,22 44,23.5 42,22" fill="#384D3E"/>
+            <circle cx="44" cy="22" r="1" fill="#FCFBF7"/>
+          </svg>
+          <div class="logo-text">pocket<span>trip</span></div>
+        </a>
+        <button class="btn-close" onclick="toggleMobileDrawer(false)">✕</button>
+      </div>
+      
+      <nav class="nav">
+        <button class="nav-home-btn active" onclick="toggleMobileDrawer(false); showHome()">🏠 <span>My Travels</span></button>
+        <button class="nav-upcoming-btn" onclick="toggleMobileDrawer(false); showHome('upcoming')">🗓️ <span>Upcoming</span></button>
+        <button class="nav-past-btn" onclick="toggleMobileDrawer(false); showHome('past')">📚 <span>Travel Archive</span></button>
+      </nav>
+    </div>
+
+    <div class="side-note">
+      <b>Earthy & Grounded Redesign 🍂</b><br>
+      • Travel & organization logo<br>
+      • Mobile drawer navigation<br>
+      • Matte organic card finishes
+    </div>
+  </div>
+</div>
+
+<div style="display:flex; flex-direction:column; min-height:100vh; width:100%">
+  <!-- Mobile Header Bar -->
+  <header class="mobile-header">
+    <button class="mobile-menu-btn" onclick="toggleMobileDrawer(true)">☰</button>
+    <a href="#" class="logo" onclick="showHome(); return false;">
+      <div class="logo-text" style="font-size:22px">pocket<span>trip</span></div>
+    </a>
+    <button class="btn primary sm" onclick="addNewTrip()">＋ New</button>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div>
+        <a href="#" class="logo" onclick="showHome(); return false;">
+          <svg class="brand-icon-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" rx="16" fill="#384D3E"/>
+            <path d="M26 15C26 12.7909 27.7909 11 30 11H34C36.2091 11 38 12.7909 38 15V18H26V15Z" fill="#D6BE96" stroke="#27372B" stroke-width="1.5"/>
+            <rect x="12" y="18" width="40" height="34" rx="7" fill="#C47B59"/>
+            <path d="M12 25C12 21.134 15.134 18 19 18H12V25Z" fill="#A65B38"/>
+            <path d="M52 25C52 21.134 48.866 18 45 18H52V25Z" fill="#A65B38"/>
+            <path d="M12 45C12 48.866 15.134 52 19 52H12V45Z" fill="#A65B38"/>
+            <path d="M52 45C52 48.866 48.866 52 45 52H52V45Z" fill="#A65B38"/>
+            <rect x="22" y="18" width="4" height="34" fill="#384D3E" opacity="0.85"/>
+            <rect x="38" y="18" width="4" height="34" fill="#384D3E" opacity="0.85"/>
+            <circle cx="24" cy="35" r="1.5" fill="#D6BE96"/>
+            <circle cx="40" cy="35" r="1.5" fill="#D6BE96"/>
+            <rect x="25" y="24" width="14" height="18" rx="2.5" fill="#FCFBF7" stroke="#384D3E" stroke-width="1.2"/>
+            <path d="M27.5 28.5L29 30L32 27" stroke="#5C7662" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="28" y1="33" x2="36" y2="33" stroke="#A65B38" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="28" y1="37" x2="34" y2="37" stroke="#A65B38" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="44" cy="22" r="7.5" fill="#FCFBF7" stroke="#384D3E" stroke-width="1.5"/>
+            <polygon points="44,16.5 46,22 44,20.5 42,22" fill="#C47B59"/>
+            <polygon points="44,27.5 46,22 44,23.5 42,22" fill="#384D3E"/>
+            <circle cx="44" cy="22" r="1" fill="#FCFBF7"/>
+          </svg>
+          <div class="logo-text">pocket<span>trip</span></div>
+        </a>
+        <nav class="nav" style="margin-top:28px">
+          <button class="nav-home-btn active" onclick="showHome()">🏠 <span>My Travels</span></button>
+          <button class="nav-upcoming-btn" onclick="showHome('upcoming')">🗓️ <span>Upcoming</span></button>
+          <button class="nav-past-btn" onclick="showHome('past')">📚 <span>Travel Archive</span></button>
+        </nav>
+      </div>
+      <div class="side-note">
+        <b>Earthy & Grounded Redesign 🍂</b><br>
+        • Travel & organization logo<br>
+        • Warm terracotta & sage tones<br>
+        • Matte organic card finishes<br>
+        • Account authentication & trip collaboration
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <input id="search" class="search" placeholder="Search trips or destinations…" oninput="renderHome()">
+        <div class="top-actions">
+          <div id="user-badge" class="user-badge">👤 <span id="user-name-display">Guest</span></div>
+          <button class="btn sm" onclick="logout()">Logout</button>
+          <button class="btn sm" onclick="exportData()">Backup JSON</button>
+          <button class="btn primary sm" onclick="addNewTrip()">＋ New Trip</button>
+        </div>
+      </header>
+      <div id="content" class="content"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Hidden Camera/File Input for Journal Photos -->
+<input type="file" id="journal-camera-input" accept="image/*" multiple style="display:none">
+
+<!-- Preset Icon / Emoji Selector Modal -->
+<div id="icon-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Choose Trip Icon 🎨</h3>
+      <button class="btn-close" onclick="closeIconModal()">✕</button>
+    </div>
+    
+    <div class="emoji-grid" id="preset-emoji-grid"></div>
+
+    <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; font-family:'JetBrains Mono', monospace; margin-bottom:6px">
+      Or use custom Emoji / Image URL
+    </div>
+    <div class="custom-icon-input">
+      <input id="custom-icon-val" class="editable-text" style="border:1.5px solid var(--line-bold); background:#fff; font-weight:600" placeholder="Paste image URL or emoji...">
+      <button class="btn primary" onclick="applyCustomIcon()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cover Customization Modal -->
+<div id="cover-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Customize Trip Cover 🌄</h3>
+      <button class="btn-close" onclick="closeCoverModal()">✕</button>
+    </div>
+    
+    <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; font-family:'JetBrains Mono', monospace; margin-bottom:6px">
+      Select Background Color
+    </div>
+    <div class="color-swatch-grid">
+      <div class="color-swatch" style="background: linear-gradient(135deg, #5c7662, #8a7a5a);" onclick="setCoverColor('linear-gradient(135deg, #5c7662, #8a7a5a)')"></div>
+      <div class="color-swatch" style="background: linear-gradient(135deg, #c47b59, #a65b38);" onclick="setCoverColor('linear-gradient(135deg, #c47b59, #a65b38)')"></div>
+      <div class="color-swatch" style="background: linear-gradient(135deg, #384d3e, #27372b);" onclick="setCoverColor('linear-gradient(135deg, #384d3e, #27372b)')"></div>
+      <div class="color-swatch" style="background: linear-gradient(135deg, #d6be96, #8a7a5a);" onclick="setCoverColor('linear-gradient(135deg, #d6be96, #8a7a5a)')"></div>
+      <div class="color-swatch" style="background: linear-gradient(135deg, #4b6cb7, #182848);" onclick="setCoverColor('linear-gradient(135deg, #4b6cb7, #182848)')"></div>
+      <div class="color-swatch" style="background: linear-gradient(135deg, #eecda3, #ef629f);" onclick="setCoverColor('linear-gradient(135deg, #eecda3, #ef629f)')"></div>
+    </div>
+
+    <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; font-family:'JetBrains Mono', monospace; margin-bottom:6px">
+      Or Background Image URL
+    </div>
+    <div class="custom-icon-input" style="margin-bottom:16px">
+      <input id="cover-image-val" class="editable-text" style="border:1.5px solid var(--line-bold); background:#fff; font-weight:600" placeholder="Paste image URL...">
+      <button class="btn primary" onclick="applyCoverImage()">Apply Image</button>
+    </div>
+
+    <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; font-family:'JetBrains Mono', monospace; margin-bottom:6px">
+      Cover Icon / Emoji
+    </div>
+    <div class="custom-icon-input">
+      <input id="cover-icon-val" class="editable-text" style="border:1.5px solid var(--line-bold); background:#fff; font-weight:600" placeholder="Paste emoji or icon URL...">
+      <button class="btn primary" onclick="applyCoverIcon()">Apply Icon</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY = 'pockettrip_v3_0';
+const SUPABASE_URL = 'https://pgbplrmchbryfkncgmrt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_c11EznkwoOHcB3g-wYGamg_mUDMVODJ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+
+let users = {};
+let currentUser = null;
+let currentAuthUser = null;
+let realtimeChannel = null;
+let cloudReady = false;
+let legacyLocalTrips = null;
+
+let customTags = JSON.parse(localStorage.getItem(KEY + '_tags') || '["Booked", "Pending", "Confirmed", "Scheduled", "Planned", "Completed"]');
+
+const PRESET_ICONS = [
+  '🇯🇵', '🇫🇷', '🇮🇹', '🇪🇸', '🇬🇧', '🇺🇸', '🇲🇽', '🇨🇦',
+  '✈️', '🚀', '🌴', '🏖️', '🏔️', '🌋', '🏕️', '⛵',
+  '🎡', '🏯', '🗽', '🗼', '⛩️', '🌉', '🗺️', '🧳',
+  '📸', '🍣', '🍷', '🍕', '🎉', '🌟'
+];
+
+const DEFAULT_TABS = [
+  { id: 'overview', label: 'Overview 🗺️' },
+  { id: 'transport', label: 'Map & Routes 🚄' },
+  { id: 'todo', label: 'To-Do List 📋' },
+  { id: 'itinerary', label: 'Itinerary 🗓️' },
+  { id: 'bookings', label: 'Bookings 🏨' },
+  { id: 'places', label: 'Wishlist 📍' },
+  { id: 'journal', label: 'Journal 📷' },
+  { id: 'outfits', label: 'Outfit Planner 👗' },
+  { id: 'packing', label: 'Packing Lists 🎒' },
+  { id: 'budget', label: 'Budget 💰' }
+];
+
+const storedTripsJson = localStorage.getItem(KEY);
+let trips = storedTripsJson ? (JSON.parse(storedTripsJson) || []) : [
+ {
+  id: 'japan-2027',
+  owner: 'demo',
+  collaborators: [],
+  name: 'Japan Adventure',
+  flag: '🇯🇵',
+  coverBg: 'linear-gradient(135deg, #5c7662, #8a7a5a)',
+  dates: 'Oct 24 – Nov 12, 2027',
+  status: 'Planning',
+  description: 'Anniversary trip across Japan exploring historic cities, hot spring ryokans, and delicious local cuisine.',
+  tabOrder: ['overview', 'transport', 'todo', 'itinerary', 'bookings', 'places', 'journal', 'packing', 'budget'],
+  destinations: [
+    { name: 'Tokyo', lat: 35.6762, lng: 139.6503 },
+    { name: 'Hakone', lat: 35.2333, lng: 139.1026 },
+    { name: 'Kyoto', lat: 35.0116, lng: 135.7681 },
+    { name: 'Osaka', lat: 34.6937, lng: 135.5023 }
+  ],
+  savedRoutes: [
+    { id: 'r1', name: 'Tokyo Station to Kyoto Station', origin: 'Tokyo Station', dest: 'Kyoto Station' },
+    { id: 'r2', name: 'Shinjuku to Hakone-Yumoto', origin: 'Shinjuku Station', dest: 'Hakone-Yumoto Station' }
+  ],
+  budgetGoal: 6500,
+  todoList: [
+   { id: 'td1', title: 'Book Tokyo Haneda Flight', cat: 'Flights', done: true },
+   { id: 'td2', title: 'Reserve Hakone Ryokan with Private Onsen', cat: 'Hotels', done: true }
+  ],
+  itinerary: [
+   { month: 'OCT', day: '25', place: 'Tokyo (Arrival)', events: [
+     { id: 'e1', time: '10:30 AM', title: 'Land at Haneda Airport', note: 'Pick up pocket Wi-Fi at Suica counter' }
+   ]}
+  ],
+  transport: [],
+  bookings: [],
+  packingLists: [],
+  activePackingListId: '',
+  places: [],
+  journal: [],
+  expenses: []
+ }
+];
+
+// Only offer migration for trips that were actually saved on this device.
+// The built-in demo trip is not personal data and must never be silently imported.
+legacyLocalTrips = storedTripsJson ? JSON.parse(JSON.stringify(trips)) : null;
+
+let activeTrip = null;
+let activeTab = 'overview';
+let homeFilter = 'all';
+let draggedTabIndex = null;
+let editingCoverTripId = null;
+
+function toggleMobileDrawer(open) {
+  const drawer = document.getElementById('mobile-drawer-backdrop');
+  if (drawer) drawer.classList.toggle('active', open);
+}
+
+async function initAuth() {
+  const overlay = document.getElementById('auth-overlay');
+  const { data: { session } } = await sb.auth.getSession();
+  currentAuthUser = session?.user || null;
+  currentUser = currentAuthUser?.id || null;
+  if (!currentAuthUser) {
+    cloudReady = false;
+    if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+    overlay.style.display = 'flex';
+    return;
+  }
+  overlay.style.display = 'none';
+  cloudReady = true;
+  document.getElementById('user-name-display').textContent = currentAuthUser.user_metadata?.display_name || currentAuthUser.email || 'Account';
+  await loadCloudTrips();
+  subscribeToTrips();
+  renderHome();
+}
+
+function getAuthRedirectUrl() {
+  // Supabase cannot redirect back to a file:// URL. Once Pockettrip is hosted
+  // over HTTP(S), use the exact page URL as the post-confirmation destination.
+  if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return null;
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  return url.toString();
+}
+
+async function handleAuth(type) {
+  const u = document.getElementById('auth-username').value.trim().toLowerCase();
+  const p = document.getElementById('auth-password').value;
+  if (!u || !p) { alert('Please enter your email and password.'); return; }
+  if (!/^\S+@\S+\.\S+$/.test(u)) { alert('Please enter a valid email address.'); return; }
+  if (p.length < 6) { alert('Password must be at least 6 characters.'); return; }
+  if (type === 'signup') {
+    const redirectTo = getAuthRedirectUrl();
+    if (!redirectTo) {
+      alert('Pockettrip needs to be opened from its hosted HTTPS website before you create an account. Please use the published Pockettrip site rather than opening the HTML file directly.');
+      return;
+    }
+    const displayName = u.split('@')[0];
+    const { data, error } = await sb.auth.signUp({
+      email: u,
+      password: p,
+      options: { data: { display_name: displayName }, emailRedirectTo: redirectTo }
+    });
+    if (error) { alert(error.message); return; }
+    if (!data.session) {
+      alert('Account created. Please check your email and click the confirmation link. You will be returned to Pockettrip automatically.');
+      return;
+    }
+    toast('Account created successfully!');
+    await initAuth();
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email: u, password: p });
+    if (error) { alert(error.message); return; }
+    toast('Logged in successfully!');
+    await initAuth();
+  }
+}
+
+async function logout() {
+  if (realtimeChannel) { await sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  await sb.auth.signOut();
+  currentUser = null;
+  currentAuthUser = null;
+  cloudReady = false;
+  activeTrip = null;
+  trips = [];
+  initAuth();
+}
+
+async function loadCloudTrips() {
+  const { data, error } = await sb.from('trips').select('*').order('updated_at', { ascending: false });
+  if (error) { console.error(error); alert('Could not load your trips: ' + error.message); return; }
+  trips = (data || []).map(row => ({ ...(row.data || {}), id: row.id, owner: row.owner_id, _updatedAt: row.updated_at }));
+  const hasLegacy = Array.isArray(legacyLocalTrips) && legacyLocalTrips.length > 0;
+  if (trips.length === 0 && hasLegacy && confirm('Pockettrip found trips saved on this device. Would you like to import them into your new cloud account?')) {
+    for (const oldTrip of legacyLocalTrips) {
+      const imported = JSON.parse(JSON.stringify(oldTrip));
+      imported.id = crypto.randomUUID();
+      imported.owner = currentUser;
+      imported.collaborators = [];
+      await saveTripToCloud(imported, true);
+    }
+    const { data: refreshed } = await sb.from('trips').select('*').order('updated_at', { ascending: false });
+    trips = (refreshed || []).map(row => ({ ...(row.data || {}), id: row.id, owner: row.owner_id, _updatedAt: row.updated_at }));
+    toast('Existing trips imported!');
+  }
+}
+
+function subscribeToTrips() {
+  if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb.channel('pockettrip-trips-' + currentUser)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        trips = trips.filter(t => t.id !== payload.old.id);
+        if (activeTrip?.id === payload.old.id) { activeTrip = null; renderHome(); }
+        else renderHome();
+        return;
+      }
+      const row = payload.new;
+      const next = { ...(row.data || {}), id: row.id, owner: row.owner_id, _updatedAt: row.updated_at };
+      const idx = trips.findIndex(t => t.id === row.id);
+      if (idx >= 0) trips[idx] = next; else trips.unshift(next);
+      if (activeTrip?.id === row.id) {
+        activeTrip = next;
+        const el = document.activeElement;
+        if (!el || !['INPUT','TEXTAREA','SELECT'].includes(el.tagName)) renderTrip();
+        toast('Trip updated by a collaborator');
+      } else renderHome();
+    })
+    .subscribe();
+}
+
+async function saveTripToCloud(trip, silent=false) {
+  if (!cloudReady || !currentUser || !trip) return;
+  const payload = JSON.parse(JSON.stringify(trip));
+  delete payload._updatedAt;
+  payload.owner = trip.owner || currentUser;
+  payload.collaborators = payload.collaborators || [];
+  const { error } = await sb.from('trips').upsert({ id: trip.id || crypto.randomUUID(), owner_id: trip.owner || currentUser, name: payload.name || 'Untitled Trip', data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+  if (error) { console.error(error); if (!silent) toast('Cloud save failed'); }
+}
+
+function save() {
+  localStorage.setItem(KEY + '_tags', JSON.stringify(customTags));
+  if (activeTrip && cloudReady) saveTripToCloud(activeTrip);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(window.tt);
+  window.tt = setTimeout(() => t.style.display = 'none', 2200);
+}
+
+function updateNavActiveState() {
+  const btnHomes = document.querySelectorAll('.nav-home-btn');
+  const btnUpcomings = document.querySelectorAll('.nav-upcoming-btn');
+  const btnPasts = document.querySelectorAll('.nav-past-btn');
+  
+  btnHomes.forEach(b => b.classList.toggle('active', homeFilter === 'all' && !activeTrip));
+  btnUpcomings.forEach(b => b.classList.toggle('active', homeFilter === 'upcoming' && !activeTrip));
+  btnPasts.forEach(b => b.classList.toggle('active', homeFilter === 'past' && !activeTrip));
+}
+
+function showHome(filter = 'all') { activeTrip = null; homeFilter = filter; updateNavActiveState(); renderHome(); }
+
+function getUserTrips() { return trips; }
+
+async function addCollaborator(tripId) {
+  const targetTrip = trips.find(t => t.id === tripId);
+  if (!targetTrip) return;
+  if (targetTrip.owner !== currentUser) { alert('Only the trip owner can add collaborators.'); return; }
+  const email = prompt('Enter the collaborator’s account email address:');
+  if (!email) return;
+  const { data, error } = await sb.rpc('add_trip_member_by_email', { p_trip_id: tripId, p_email: email.trim().toLowerCase(), p_role: 'editor' });
+  if (error) { alert(error.message); return; }
+  toast(data || 'Collaborator added!');
+}
+
+function renderHome() {
+ if (!currentUser) return;
+ updateNavActiveState();
+ const q = (document.getElementById('search')?.value || '').toLowerCase();
+ const userTrips = getUserTrips();
+ 
+ let list = userTrips.filter(t => 
+   (homeFilter === 'all' || (homeFilter === 'upcoming' ? t.status !== 'Completed' : t.status === 'Completed')) &&
+   (t.name + ' ' + (t.destinations||[]).map(d=>d.name).join(' ')).toLowerCase().includes(q)
+ );
+
+ document.getElementById('content').innerHTML = `
+ <div class="hero">
+   <div>
+     <div class="eyebrow">Interactive Travel Dashboard</div>
+     <h1>My Travels 🌲</h1>
+     <p class="subtitle">Organize routes, daily activities, master checklists, and camera memories.</p>
+   </div>
+   <button class="btn primary" onclick="addNewTrip()">＋ New Trip</button>
+ </div>
+ <div class="stats">
+   <div class="stat"><div class="num">${userTrips.length}</div><small>TRIPS</small></div>
+   <div class="stat"><div class="num">${userTrips.reduce((n,t)=>n+(t.destinations?.length||0),0)}</div><small>CITIES VISITED</small></div>
+   <div class="stat"><div class="num">${userTrips.filter(t=>t.status!=='Completed').length}</div><small>UPCOMING</small></div>
+   <div class="stat"><div class="num">${userTrips.filter(t=>t.status==='Completed').length}</div><small>COMPLETED</small></div>
+ </div>
+ <div class="section-title">
+   <h2>${homeFilter==='past'?'Travel Archive':homeFilter==='upcoming'?'Upcoming Trips':'All Trips'}</h2>
+   <span class="muted" style="font-weight:700; font-family:'JetBrains Mono', monospace">${list.length} trip${list.length===1?'':'s'}</span>
+ </div>
+ <div class="grid">
+   ${list.map(t => {
+     const bgStyle = t.coverBg ? (t.coverBg.startsWith('http') || t.coverBg.startsWith('data:') ? `background-image: url('${t.coverBg}')` : `background: ${t.coverBg}`) : 'background: linear-gradient(135deg, #5c7662, #8a7a5a)';
+     const collabs = t.collaborators || [];
+     return `
+     <div class="card trip-card" onclick="openTrip('${t.id}')">
+       <div class="cover" style="${bgStyle}">
+         <span class="flag">${renderTripIconDisplay(t.flag)}</span>
+         <span class="status-pill">${esc(t.status)}</span>
+       </div>
+       <div class="trip-body">
+         <div class="trip-header-row">
+           <h3>${esc(t.name)}</h3>
+           <div style="display:flex;gap:6px;align-items:center">
+             <button class="edit-cover-btn" title="Edit Cover" onclick="event.stopPropagation(); openCoverModal('${t.id}')">✏️</button>
+             ${t.owner === currentUser ? `<button class="edit-cover-btn" title="Delete Trip" aria-label="Delete Trip" onclick="event.stopPropagation(); deleteTrip('${t.id}')">🗑️</button>` : ''}
+           </div>
+         </div>
+         <div class="trip-meta">${esc(t.dates)}</div>
+       </div>
+     </div>
+   `}).join('')}
+ </div>`;
+}
+
+function renderTripIconDisplay(val) {
+  if (!val) return '✈️';
+  if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image')) {
+    return `<img src="${esc(val)}" alt="icon">`;
+  }
+  return esc(val);
+}
+
+function openCoverModal(tripId) {
+  editingCoverTripId = tripId;
+  const t = trips.find(x => x.id === tripId);
+  document.getElementById('cover-image-val').value = (t.coverBg && (t.coverBg.startsWith('http') || t.coverBg.startsWith('data:'))) ? t.coverBg : '';
+  document.getElementById('cover-icon-val').value = t.flag || '';
+  document.getElementById('cover-modal').classList.add('open');
+}
+
+function closeCoverModal() {
+  document.getElementById('cover-modal').classList.remove('open');
+  editingCoverTripId = null;
+}
+
+function setCoverColor(colorCss) {
+  const t = trips.find(x => x.id === editingCoverTripId);
+  if (t) {
+    t.coverBg = colorCss;
+    save();
+    renderHome();
+    closeCoverModal();
+    toast('Cover style updated!');
+  }
+}
+
+function applyCoverImage() {
+  const val = document.getElementById('cover-image-val').value.trim();
+  const t = trips.find(x => x.id === editingCoverTripId);
+  if (t && val) {
+    t.coverBg = val;
+    save();
+    renderHome();
+    closeCoverModal();
+    toast('Cover image updated!');
+  }
+}
+
+function applyCoverIcon() {
+  const val = document.getElementById('cover-icon-val').value.trim();
+  const t = trips.find(x => x.id === editingCoverTripId);
+  if (t && val) {
+    t.flag = val;
+    save();
+    renderHome();
+    closeCoverModal();
+    toast('Cover icon updated!');
+  }
+}
+
+function openIconModal() {
+  const grid = document.getElementById('preset-emoji-grid');
+  grid.innerHTML = PRESET_ICONS.map(e => `
+    <div class="emoji-option" onclick="selectPresetIcon('${e}')">${e}</div>
+  `).join('');
+  
+  document.getElementById('custom-icon-val').value = activeTrip.flag || '';
+  document.getElementById('icon-modal').classList.add('open');
+}
+
+function closeIconModal() {
+  document.getElementById('icon-modal').classList.remove('open');
+}
+
+function selectPresetIcon(val) {
+  activeTrip.flag = val;
+  save();
+  renderTrip();
+  closeIconModal();
+  toast('Trip icon updated!');
+}
+
+function applyCustomIcon() {
+  const val = document.getElementById('custom-icon-val').value.trim();
+  if (val) {
+    activeTrip.flag = val;
+    save();
+    renderTrip();
+    closeIconModal();
+    toast('Custom icon applied!');
+  }
+}
+
+function openTrip(id) { 
+  activeTrip = trips.find(t => t.id === id); 
+  if(!activeTrip.tabOrder) activeTrip.tabOrder = DEFAULT_TABS.map(t => t.id);
+  if(!activeTrip.savedRoutes) activeTrip.savedRoutes = [];
+  if(!activeTrip.collaborators) activeTrip.collaborators = [];
+  if(!activeTrip.destinations) activeTrip.destinations = [];
+  if(!activeTrip.itinerary) activeTrip.itinerary = [];
+  syncItineraryToTripDates(false);
+  
+  if(!activeTrip.packingLists || !Array.isArray(activeTrip.packingLists) || activeTrip.packingLists.length === 0) {
+    activeTrip.packingLists = [
+      {
+        id: 'pl_' + Date.now(),
+        name: 'General Packing List 🎒',
+        person: '',
+        items: activeTrip.packing || []
+      }
+    ];
+    activeTrip.activePackingListId = activeTrip.packingLists[0].id;
+  }
+  
+  activeTab = activeTrip.tabOrder[0] || 'overview'; 
+  renderTrip(); 
+}
+
+function getOrderedTabs(trip) {
+  const order = trip.tabOrder || DEFAULT_TABS.map(t => t.id);
+  const tabMap = new Map(DEFAULT_TABS.map(t => [t.id, t]));
+  const ordered = [];
+  
+  order.forEach(id => {
+    if(tabMap.has(id)) {
+      ordered.push(tabMap.get(id));
+      tabMap.delete(id);
+    }
+  });
+  
+  tabMap.forEach(tab => ordered.push(tab));
+  return ordered;
+}
+
+function renderTrip() {
+ updateNavActiveState();
+ const t = activeTrip;
+ const currentTabs = getOrderedTabs(t);
+ const totalExpenses = (t.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+ const daysCount = (t.itinerary || []).length;
+
+ document.getElementById('content').innerHTML = `
+ <div class="trip-head">
+   <div class="trip-title">
+     <div class="editable-icon-btn" onclick="openIconModal()" title="Click to choose preset emoji or image icon">
+       ${renderTripIconDisplay(t.flag)}
+     </div>
+     <div style="flex:1">
+       <div style="display:flex; align-items:center; gap:8px">
+         <div class="eyebrow">${esc(t.status)}</div>
+         <select class="tag-select" style="padding:2px 6px; font-size:10px" onchange="activeTrip.status=this.value;save();renderTrip()">
+           <option value="Planning" ${t.status==='Planning'?'selected':''}>Planning</option>
+           <option value="Confirmed" ${t.status==='Confirmed'?'selected':''}>Confirmed</option>
+           <option value="Completed" ${t.status==='Completed'?'selected':''}>Completed</option>
+         </select>
+       </div>
+       <input class="editable-text" style="font-size:32px; font-weight:700; font-family:'Fraunces', serif" value="${esc(t.name)}" onchange="activeTrip.name=this.value;save()">
+       
+       <div style="display:flex; align-items:center; gap:16px; margin-top:2px; flex-wrap:wrap">
+         <input class="editable-text" style="font-size:14px; color:var(--muted); font-weight:500; width:auto; flex:1; min-width:180px" value="${esc(t.dates)}" onchange="updateTripDates(this.value)">
+         
+         <div style="display:flex; gap:10px; align-items:center">
+           <div class="header-stat-box">
+             <div class="num">${daysCount}</div>
+             <small>Days Planned</small>
+           </div>
+           <div class="header-stat-box">
+             <div class="num">$${totalExpenses.toLocaleString()}</div>
+             <small>Total Expenses</small>
+           </div>
+         </div>
+       </div>
+       
+       <div class="collaborator-bar" style="margin-top:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+         <div style="display:flex; align-items:center; gap:6px">
+           <span style="font-size:12px; font-weight:700; color:var(--muted)">Collaborators:</span>
+           <span class="collab-avatar" title="Owner: ${esc(t.owner)}">${esc(t.owner[0])}</span>
+           ${(t.collaborators||[]).map(c => `<span class="collab-avatar" style="background:var(--sage)" title="Collaborator: ${esc(c)}">${esc(c[0])}</span>`).join('')}
+           <button class="btn sm" style="padding:2px 8px; font-size:10px" onclick="addCollaborator('${t.id}')">＋ Add Collaborator</button>
+         </div>
+
+         <div style="font-size:12px; font-weight:600; color:var(--forest); display:flex; align-items:center; gap:4px">
+           📍 <span style="font-size:11px">${(t.destinations||[]).map(d=>esc(d.name)).join(' ➔ ') || 'No locations set'}</span>
+         </div>
+       </div>
+
+       <div style="margin-top:14px">
+         <textarea class="editable-text" style="width:100%; min-height:50px; font-size:13px; line-height:1.4; border:1px dashed var(--line-bold); border-radius:10px; padding:8px 12px; background:rgba(255,255,255,0.5)" placeholder="Add trip summary or notes..." onchange="activeTrip.description=this.value;save()">${esc(t.description||'')}</textarea>
+       </div>
+
+       <div class="trip-cities-header">
+         <div class="trip-cities-title">📍 Cities & destinations</div>
+         <div class="trip-city-list">
+           ${(t.destinations||[]).map((d,i) => `
+             <span class="trip-city-chip">
+               <button class="trip-city-name" type="button" onclick="editDestination(${i})">${esc(d.name)}</button>
+               <button class="trip-city-remove" type="button" title="Remove ${esc(d.name)}" onclick="removeDest(${i})">×</button>
+             </span>
+           `).join('')}
+           <button class="btn soft sm" type="button" onclick="addDest()">＋ Add City</button>
+         </div>
+       </div>
+     </div>
+   </div>
+   <div style="display:flex; gap:10px">
+     <button class="btn" onclick="showHome()">← Back</button>
+     ${t.owner === currentUser ? `<button class="btn danger sm" onclick="deleteTrip('${t.id}')">Delete Trip</button>` : ''}
+   </div>
+ </div>
+ 
+ <div class="tabs-container" id="tabs-container">
+   ${currentTabs.map((tab, idx) => `
+     <button 
+       class="tab-btn ${activeTab===tab.id?'active':''}" 
+       draggable="true"
+       ondragstart="handleTabDragStart(event, ${idx})"
+       ondragover="handleTabDragOver(event)"
+       ondrop="handleTabDrop(event, ${idx})"
+       onclick="activeTab='${tab.id}';renderTrip()"
+     >
+       <span class="drag-handle">⋮⋮</span>
+       <span>${tab.label}</span>
+     </button>
+   `).join('')}
+ </div>
+ 
+ <div class="panel">${tabContent(t)}</div>`;
+}
+
+function handleTabDragStart(e, index) {
+  draggedTabIndex = index;
+  e.dataTransfer.effectAllowed = 'move';
+  e.target.classList.add('dragging');
+}
+
+function handleTabDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleTabDrop(e, targetIndex) {
+  e.preventDefault();
+  if (draggedTabIndex === null || draggedTabIndex === targetIndex) return;
+
+  const currentTabs = getOrderedTabs(activeTrip);
+  const draggedTab = currentTabs[draggedTabIndex];
+  
+  currentTabs.splice(draggedTabIndex, 1);
+  currentTabs.splice(targetIndex, 0, draggedTab);
+
+  activeTrip.tabOrder = currentTabs.map(t => t.id);
+  draggedTabIndex = null;
+  save();
+  renderTrip();
+}
+
+function toggleRouteSection(id) {
+  const sec = document.getElementById(id);
+  if (sec) sec.classList.toggle('open');
+}
+
+function loadRouteOnMap(origin, dest) {
+  const startInput = document.getElementById('route-start');
+  const endInput = document.getElementById('route-end');
+  if (startInput) startInput.value = origin;
+  if (endInput) endInput.value = dest;
+  
+  const mapFrame = document.getElementById('gmaps-iframe');
+  const externalLink = document.getElementById('gmaps-external-link');
+  
+  if (mapFrame) mapFrame.src = `https://www.google.com/maps?q=from+${encodeURIComponent(origin)}+to+${encodeURIComponent(dest)}&output=embed`;
+  if (externalLink) externalLink.href = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}`;
+  toast(`Loaded on Map: ${origin} ➔ ${dest}`);
+}
+
+function saveCurrentRoute() {
+  const origin = document.getElementById('route-start').value.trim();
+  const dest = document.getElementById('route-end').value.trim();
+  
+  if (!origin || !dest) {
+    toast('Please enter both Start and End locations.');
+    return;
+  }
+
+  activeTrip.savedRoutes.push({
+    id: 'route-' + Date.now(),
+    name: `${origin} to ${dest}`,
+    origin,
+    dest
+  });
+
+  save();
+  renderTrip();
+  toast('Route saved to library!');
+}
+
+function deleteSavedRoute(e, index) {
+  e.stopPropagation();
+  activeTrip.savedRoutes.splice(index, 1);
+  save();
+  renderTrip();
+  toast('Saved route removed');
+}
+
+function renderTagSelect(type, itemIndex, currentVal) {
+  return `
+    <select class="tag-select" onchange="updateCustomTag('${type}', ${itemIndex}, this.value)">
+      ${customTags.map(tag => `<option value="${esc(tag)}" ${tag === currentVal ? 'selected' : ''}>${esc(tag)}</option>`).join('')}
+      <option value="__NEW__">＋ Add New Tag...</option>
+    </select>
+  `;
+}
+
+function updateCustomTag(type, itemIndex, selectedVal) {
+  if (selectedVal === '__NEW__') {
+    const newTag = prompt('Enter new tag name:');
+    if (newTag && newTag.trim()) {
+      const formatted = newTag.trim();
+      if (!customTags.includes(formatted)) {
+        customTags.push(formatted);
+      }
+      applyTagValue(type, itemIndex, formatted);
+    } else {
+      renderTrip();
+    }
+  } else {
+    applyTagValue(type, itemIndex, selectedVal);
+  }
+}
+
+function applyTagValue(type, itemIndex, val) {
+  if (type === 'transport') activeTrip.transport[itemIndex].tag = val;
+  if (type === 'booking') activeTrip.bookings[itemIndex].status = val;
+  save();
+  renderTrip();
+}
+
+function setPackingListPerson(listId, person){
+  const list=activeTrip.packingLists.find(l=>l.id===listId); if(!list) return;
+  list.person=person || '';
+  save(); renderTrip();
+}
+
+function addPackingList() {
+  const name = prompt('Enter list name (e.g. Carry-On, Beach Gear):');
+  if (name && name.trim()) {
+    const newList = {
+      id: 'pl_' + Date.now(),
+      name: name.trim(),
+      person: '',
+      items: []
+    };
+    activeTrip.packingLists.push(newList);
+    save();
+    renderTrip();
+    toast('New list created!');
+  }
+}
+
+function deletePackingList(listId) {
+  if (activeTrip.packingLists.length <= 1) {
+    toast('Cannot delete the only list!');
+    return;
+  }
+  if (confirm('Delete this list and all its items?')) {
+    activeTrip.packingLists = activeTrip.packingLists.filter(l => l.id !== listId);
+    save();
+    renderTrip();
+    toast('Packing list deleted.');
+  }
+}
+
+function addPackingItem(listId) {
+  const curList = activeTrip.packingLists.find(l => l.id === listId);
+  if (curList) {
+    curList.items.push({ title: 'New Item', done: false });
+    save();
+    renderTrip();
+  }
+}
+
+function togglePackingItem(listId, itemIdx) {
+  const curList = activeTrip.packingLists.find(l => l.id === listId);
+  if (curList && curList.items[itemIdx]) {
+    curList.items[itemIdx].done = !curList.items[itemIdx].done;
+    save();
+    renderTrip();
+  }
+}
+
+function deletePackingItem(listId, itemIdx) {
+  const curList = activeTrip.packingLists.find(l => l.id === listId);
+  if (curList) {
+    curList.items.splice(itemIdx, 1);
+    save();
+    renderTrip();
+  }
+}
+
+function baseTabContent(t) {
+ if(!t.todoList) t.todoList = [];
+ if(!t.transport) t.transport = [];
+ if(!t.bookings) t.bookings = [];
+ if(!t.savedRoutes) t.savedRoutes = [];
+ if(!t.places) t.places = [];
+ if(!t.journal) t.journal = [];
+ if(!t.expenses) t.expenses = [];
+ if(!t.itinerary) t.itinerary = [];
+
+ if(activeTab==='overview') {
+    const days = t.itinerary || [];
+    const spent = (t.expenses || []).reduce((s,e) => s + (Number(e.amount)||0), 0);
+    const totalBudget = Number(t.budgetGoal || 0);
+    const totalTodo = (t.todoList || []).length;
+    const doneTodo = (t.todoList || []).filter(td => td.done).length;
+    let totalPackingItems = 0;
+    let donePackingItems = 0;
+    (t.packingLists || []).forEach(pl => {
+      totalPackingItems += (pl.items || []).length;
+      donePackingItems += (pl.items || []).filter(i => i.done).length;
+    });
+
+    return `
+    <div style="display:flex; flex-direction:column; gap:24px;">
+
+      <!-- Main Overview Grid -->
+      <div class="grid">
+
+        <!-- FINANCE — separate block -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+            <h3 style="font-family:'Fraunces',serif; margin:0; font-size:18px; color:var(--forest)">💰 Budget</h3>
+            <button class="btn sm" onclick="activeTab='budget';renderTrip()">Budget ➔</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:4px">
+                <span>Total Amount Spent</span>
+                <span>$${spent.toLocaleString()}${totalBudget ? ` / $${totalBudget.toLocaleString()}` : ''}</span>
+              </div>
+              <div style="height:8px; background:var(--surface2); border-radius:4px; overflow:hidden">
+                <div style="height:100%; width:${Math.min(100, totalBudget ? (spent/totalBudget)*100 : 0)}%; background:var(--terracotta); border-radius:4px"></div>
+              </div>
+            </div>
+            <div style="border-top:1px dashed var(--line); padding-top:10px; font-size:13px; font-weight:600">
+              ${totalBudget ? `Remaining budget: <span style="color:var(--forest);font-weight:700">$${Math.max(0,totalBudget-spent).toLocaleString()}</span>` : 'Set a budget in the Budget tab to track remaining funds.'}
+            </div>
+          </div>
+        </div>
+
+        <!-- CHECKLIST — separate block -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+            <h3 style="font-family:'Fraunces',serif; margin:0; font-size:18px; color:var(--forest)">📋 Checklist</h3>
+            <button class="btn sm" onclick="activeTab='todo';renderTrip()">To-Do ➔</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:4px">
+                <span>Tasks Completed</span>
+                <span>${doneTodo}/${totalTodo}</span>
+              </div>
+              <div style="height:8px; background:var(--surface2); border-radius:4px; overflow:hidden">
+                <div style="height:100%; width:${totalTodo ? (doneTodo/totalTodo)*100 : 0}%; background:var(--sage); border-radius:4px"></div>
+              </div>
+            </div>
+            <div style="border-top:1px dashed var(--line); padding-top:10px; font-size:13px; font-weight:600">
+              🎒 Packing Items Packed <span style="float:right;color:var(--forest);font-weight:700">${donePackingItems}/${totalPackingItems}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule Highlights -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+            <h3 style="font-family:'Fraunces',serif; margin:0; font-size:18px; color:var(--forest)">🗓️ Schedule Highlights</h3>
+            <button class="btn sm" onclick="activeTab='itinerary';renderTrip()">Schedule ➔</button>
+          </div>
+          ${days.length ? `
+            <div style="display:flex; flex-direction:column; gap:8px">
+              ${days.slice(0,3).map((day, idx) => `
+                <div style="padding:8px 12px; background:var(--surface-solid); border:1px solid var(--line-bold); border-radius:10px">
+                  <div style="font-weight:700; font-size:13px; color:var(--forest)">Day ${idx+1} (${esc(day.month||'')} ${esc(day.day||'')}): ${esc(day.place||'Unassigned')}</div>
+                  <div style="font-size:12px; color:var(--muted); margin-top:2px">${day.events ? day.events.length : 0} activities scheduled</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `<p style="color:var(--muted); font-size:13px; margin:0">No itinerary days added yet.</p>`}
+        </div>
+      </div>
+
+      <!-- Wishlist & Journal -->
+      <div class="grid">
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+            <h3 style="font-family:'Fraunces',serif; margin:0; font-size:18px; color:var(--forest)">📍 Wishlist Highlights</h3>
+            <button class="btn sm" onclick="activeTab='places';renderTrip()">Wishlist ➔</button>
+          </div>
+          ${(t.places && t.places.length > 0) ? `
+            <div style="display:flex; flex-wrap:wrap; gap:8px">
+              ${t.places.slice(0,6).map(p => `
+                <span class="highlight-pill" style="font-size:12px; padding:6px 12px">📍 ${esc(p.title)} <small style="opacity:0.7">(${esc(p.cat||'General')})</small></span>
+              `).join('')}
+            </div>
+          ` : `<p style="color:var(--muted); font-size:13px; margin:0">No places saved on wishlist yet.</p>`}
+        </div>
+
+        <div class="card" style="padding:20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+            <h3 style="font-family:'Fraunces',serif; margin:0; font-size:18px; color:var(--forest)">📷 Travel Journal</h3>
+            <button class="btn sm" onclick="activeTab='journal';renderTrip()">Journal ➔</button>
+          </div>
+          ${(t.journal && t.journal.length > 0) ? `
+            <div style="display:flex; align-items:center; gap:12px">
+              ${t.journal[0].photo ? `<img src="${esc(t.journal[0].photo)}" style="width:60px; height:60px; object-fit:cover; border-radius:10px; border:1px solid var(--line-bold)">` : ''}
+              <div>
+                <div style="font-weight:700; font-size:14px">${esc(t.journal[0].title||'Travel Memory')}</div>
+                <div style="font-size:12px; color:var(--muted)">${esc(t.journal[0].date || '')} ${esc(t.journal[0].location ? '• ' + t.journal[0].location : '')}</div>
+              </div>
+            </div>
+          ` : `<p style="color:var(--muted); font-size:13px; margin:0">No journal entries logged yet.</p>`}
+        </div>
+      </div>
+
+
+    </div>`;
+  }
+
+  if(activeTab==='itinerary') {
+   return `
+   <div class="section-title">
+     <div>
+       <h2>Daily Itinerary & Schedule</h2>
+       <span class="muted" style="font-size:13px; font-weight:500">Click anywhere on a day card to expand or collapse details</span>
+     </div>
+     <button class="btn soft" onclick="addDay()">＋ Add Day</button>
+   </div>
+   ${t.itinerary.map((d,i) => `
+     <div class="day-group">
+       <div class="day-header-title">DAY ${i+1}</div>
+       <div class="day-card ${i===0?'open':''}" id="day-card-${i}">
+         <div class="day-summary-header" onclick="toggleDayAccordion(${i})">
+           <div class="day-title-row">
+             <div class="calendar-box" onclick="event.stopPropagation()">
+               <input class="cal-input cal-top" value="${esc(d.month || 'OCT')}" placeholder="OCT" onchange="activeTrip.itinerary[${i}].month=this.value;save()">
+               <input class="cal-input cal-body" value="${esc(d.day || (i+24).toString())}" placeholder="24" onchange="activeTrip.itinerary[${i}].day=this.value;save()">
+             </div>
+
+             <div>
+               <input class="editable-text day-title-input" style="font-weight:700; font-size:18px; font-family:'Fraunces', serif" value="${esc(d.place)}" placeholder="Location or Summary" onclick="event.stopPropagation()" onchange="activeTrip.itinerary[${i}].place=this.value;save()">
+               <div class="summary-highlights">
+                 ${(d.events||[]).map(e => `<span class="highlight-pill">${esc(e.title)}</span>`).join('')}
+               </div>
+             </div>
+           </div>
+
+           <div style="display:flex; align-items:center; gap:12px">
+             <button class="btn-close" onclick="event.stopPropagation(); deleteDay(${i})">✕</button>
+           </div>
+         </div>
+         <div class="day-detail-body">
+           <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:12px; font-family:'JetBrains Mono', monospace">Timed Breakdown</div>
+           ${(d.events||[]).map((e, ei) => `
+             <div class="timeline-item">
+               <select class="editable-text time-tag" onchange="updateItineraryEventTime(${i},${ei},this.value);event.stopPropagation()">${timeOptions(e.time)}</select>
+               <div>
+                 <input class="editable-text" style="font-weight:600; font-size:15px" value="${esc(e.title)}" onchange="activeTrip.itinerary[${i}].events[${ei}].title=this.value;save()">
+                 <input class="editable-text" style="font-size:13px; color:var(--muted)" value="${esc(e.note||'')}" placeholder="Notes..." onchange="activeTrip.itinerary[${i}].events[${ei}].note=this.value;save()">
+               </div>
+               <button class="btn-close" onclick="deleteEvent(${i}, ${ei})">✕</button>
+             </div>
+           `).join('')}
+           <button class="btn soft sm" style="margin-top:14px" onclick="addEvent(${i})">＋ Add Timed Activity</button>
+         </div>
+       </div>
+     </div>
+   `).join('')}`;
+ }
+
+ if(activeTab==='transport') {
+   const defaultStart = t.savedRoutes[0]?.origin || (t.destinations && t.destinations[0] ? t.destinations[0].name : 'Tokyo Station');
+   const defaultEnd = t.savedRoutes[0]?.dest || (t.destinations && t.destinations[1] ? t.destinations[1].name : 'Kyoto Station');
+   
+   return `
+   <div class="section-title">
+     <div>
+       <h2>Map & Routes 🚄</h2>
+       <span class="muted" style="font-size:13px; font-weight:500">Pinned Route Map with Collapsible Route & Transit Controls</span>
+     </div>
+   </div>
+
+   <iframe id="gmaps-iframe" class="gmaps-frame" src="https://www.google.com/maps?q=from+${encodeURIComponent(defaultStart)}+to+${encodeURIComponent(defaultEnd)}&output=embed" frameborder="0" allowfullscreen></iframe>
+
+   <div class="route-section open" id="sec-finder">
+     <div class="route-section-header" onclick="toggleRouteSection('sec-finder')">
+       <div style="font-weight:700; font-size:16px;">📍 Interactive Route Finder</div>
+       <span class="chev">▼</span>
+     </div>
+     <div class="route-section-body">
+       <div class="route-finder-grid">
+         <div>
+           <label style="font-size:10px; font-weight:700; color:var(--forest); text-transform:uppercase; font-family:'JetBrains Mono', monospace">Start Location / Station</label>
+           <input id="route-start" class="editable-text" style="border: 1.5px solid var(--line-bold); background:#fff; font-size:14px; font-weight:600" value="${esc(defaultStart)}">
+         </div>
+         <div>
+           <label style="font-size:10px; font-weight:700; color:var(--forest); text-transform:uppercase; font-family:'JetBrains Mono', monospace">End Location / Station</label>
+           <input id="route-end" class="editable-text" style="border: 1.5px solid var(--line-bold); background:#fff; font-size:14px; font-weight:600" value="${esc(defaultEnd)}">
+         </div>
+         <div style="display:flex; gap:10px">
+           <button class="btn primary" onclick="loadRouteOnMap(document.getElementById('route-start').value, document.getElementById('route-end').value)">Map Route</button>
+           <button class="btn soft" onclick="saveCurrentRoute()">💾 Save Route</button>
+         </div>
+       </div>
+       <div style="margin-top:14px;">
+         <a id="gmaps-external-link" href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(defaultStart)}&destination=${encodeURIComponent(defaultEnd)}" target="_blank" class="btn soft sm" style="text-decoration:none; display:inline-flex; align-items:center;">↗ Open Directions in Google Maps App</a>
+       </div>
+     </div>
+   </div>
+
+   <div class="route-section open" id="sec-routes">
+     <div class="route-section-header" onclick="toggleRouteSection('sec-routes')">
+       <div style="font-weight:700; font-size:16px;">📚 Saved Routes Library (${t.savedRoutes.length})</div>
+       <span class="chev">▼</span>
+     </div>
+     <div class="route-section-body">
+       ${t.savedRoutes.length === 0 ? '<p style="color:var(--muted); font-weight:500; margin:0">No saved routes yet. Type starting and ending points above and click "💾 Save Route".</p>' : ''}
+       ${t.savedRoutes.map((r, i) => `
+         <div class="saved-route-card" onclick="loadRouteOnMap('${esc(r.origin)}', '${esc(r.dest)}')">
+           <div>
+             <div style="font-weight:700; font-size:15px;">${esc(r.name)}</div>
+             <div style="font-size:13px; color:var(--forest); font-weight:600;">📍 ${esc(r.origin)} ➔ 📍 ${esc(r.dest)}</div>
+           </div>
+           <div style="display:flex; gap:12px; align-items:center;">
+             <span style="font-size:12px; font-weight:600; color:var(--muted)">Click to Map 🗺️</span>
+             <button class="btn-close" onclick="deleteSavedRoute(event, ${i})">✕</button>
+           </div>
+         </div>
+       `).join('')}
+     </div>
+   </div>
+
+   <div class="route-section open" id="sec-transit">
+     <div class="route-section-header" onclick="toggleRouteSection('sec-transit')">
+       <div style="font-weight:700; font-size:16px;">🎟️ Manual Transit Tickets & Schedules</div>
+       <span class="chev">▼</span>
+     </div>
+     <div class="route-section-body">
+       <div style="margin-bottom:16px;">
+         <button class="btn soft sm" onclick="addTransport()">＋ Add Manual Transit Ticket</button>
+       </div>
+       ${t.transport.map((x, i) => `
+         <div class="transit-card">
+           <div class="transit-header">
+             <div style="display:flex; gap:12px; align-items:center; flex:1">
+               <input class="editable-text" style="font-size:24px; width:46px" value="${esc(x.icon||'✈️')}" onchange="activeTrip.transport[${i}].icon=this.value;save()">
+               <div style="flex:1">
+                 <input class="editable-text" style="font-weight:700; font-size:18px" value="${esc(x.title)}" onchange="activeTrip.transport[${i}].title=this.value;save()">
+                 <input class="editable-text" style="font-size:13px; color:var(--muted)" value="${esc(x.code||'')}" placeholder="Flight/Train #" onchange="activeTrip.transport[${i}].code=this.value;save()">
+               </div>
+             </div>
+             ${renderTagSelect('transport', i, x.tag || 'Booked')}
+             <button class="btn-close" onclick="deleteTransport(${i})">✕</button>
+           </div>
+           <div class="transit-route-grid">
+             <div class="station-box">
+               <label>Departure</label>
+               <input class="editable-text" style="font-weight:700" value="${esc(x.depStation||'')}" placeholder="Station/Airport" onchange="activeTrip.transport[${i}].depStation=this.value;save()">
+               <input class="editable-text" style="font-size:12px; color:var(--muted)" value="${esc(x.depTime||'')}" placeholder="Time" onchange="activeTrip.transport[${i}].depTime=this.value;save()">
+             </div>
+             <div style="text-align:center; font-size:20px; color:var(--terracotta)">➔</div>
+             <div class="station-box">
+               <label>Arrival</label>
+               <input class="editable-text" style="font-weight:700" value="${esc(x.arrStation||'')}" placeholder="Station/Airport" onchange="activeTrip.transport[${i}].arrStation=this.value;save()">
+               <input class="editable-text" style="font-size:12px; color:var(--muted)" value="${esc(x.arrTime||'')}" placeholder="Time" onchange="activeTrip.transport[${i}].arrTime=this.value;save()">
+             </div>
+           </div>
+         </div>
+       `).join('')}
+     </div>
+   </div>`;
+ }
+
+ if(activeTab==='bookings') {
+   return `
+   <div class="section-title">
+     <div><h2>Bookings & Reservations 🏨</h2></div>
+     <button class="btn soft" onclick="addBooking()">＋ Add Reservation</button>
+   </div>
+   <div class="grid">
+     ${t.bookings.map((b, i) => `
+       <div class="card" style="padding:20px">
+         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
+           <input class="editable-text" style="font-size:28px; width:50px" value="${esc(b.icon||'🏨')}" onchange="activeTrip.bookings[${i}].icon=this.value;save()">
+           ${renderTagSelect('booking', i, b.status || 'Booked')}
+         </div>
+         <input class="editable-text" style="font-weight:700; font-size:18px; margin-bottom:4px" value="${esc(b.title)}" onchange="activeTrip.bookings[${i}].title=this.value;save()">
+         <textarea class="editable-text" style="font-size:13px; color:var(--muted); min-height:60px" onchange="activeTrip.bookings[${i}].detail=this.value;save()">${esc(b.detail||'')}</textarea>
+         <div style="text-align:right; margin-top:8px">
+           <button class="btn-close" type="button" title="Delete booking" aria-label="Delete booking" onclick="deleteBooking(${i})">✕</button>
+         </div>
+       </div>
+     `).join('')}
+   </div>`;
+ }
+
+ if(activeTab==='places') {
+   const travelTags = ['Dining','Attractions','Parks','Temples/Shrines','Shops','Museums','Gardens','Markets','Neighborhoods','Beaches','Hiking/Nature','Activities/Experiences','Tours','Cafés','Bars/Nightlife','Entertainment','Cultural Sites','Historic Sites','Photography','Day Trips','Other'];
+   return `
+   <div class="section-title">
+     <div>
+       <h2>Wishlist 📍</h2>
+       <span class="muted" style="font-size:13px; font-weight:500">Save places and experiences by travel category.</span>
+     </div>
+     <button class="btn soft" onclick="addPlace()">＋ Add Place</button>
+   </div>
+   <div class="compact-places-grid">
+     ${t.places.map((p, i) => `
+       <div class="place-card-compact">
+         <div class="place-header">
+           <input class="editable-text" style="font-weight:700; font-size:16px" value="${esc(p.title)}" onchange="activeTrip.places[${i}].title=this.value;save()">
+           <button class="btn-close" onclick="deletePlace(${i})">✕</button>
+         </div>
+         <select class="tag-select" onchange="activeTrip.places[${i}].cat=this.value;save()">
+           ${travelTags.map(tag=>`<option value="${esc(tag)}" ${String(p.cat||'Other')===tag?'selected':''}>${esc(tag)}</option>`).join('')}
+         </select>
+         <input class="editable-text" style="font-size:13px; color:var(--muted)" value="${esc(p.note||'')}" placeholder="Notes, address, or link..." onchange="activeTrip.places[${i}].note=this.value;save()">
+       </div>
+     `).join('')}
+   </div>`;
+ }
+
+ if(activeTab==='journal') {
+   return `
+   <div class="section-title">
+     <div>
+       <h2>Journal 📷</h2>
+       <span class="muted" style="font-size:13px; font-weight:500">Keep all the photos and details from one activity together.</span>
+     </div>
+     <div style="display:flex;gap:10px;flex-wrap:wrap">
+       <button class="btn" onclick="openJournalCamera()">📷 New Photo Memory</button>
+       <button class="btn soft" onclick="addJournal()">＋ New Memory</button>
+     </div>
+   </div>
+   <div class="journal-grid">
+     ${t.journal.map((j,i) => {
+       const photos=journalPhotos(j);
+       const slide=journalCarouselIndex[i]||0;
+       const current=photos[slide]||photos[0]||'';
+       return `
+       <div class="journal-card">
+         <div class="journal-carousel">
+           ${current ? `<img class="journal-carousel-image" src="${esc(current)}" alt="Journal photo ${slide+1}">` : `<div class="journal-no-photo">📷<span>No photos yet</span></div>`}
+           ${photos.length>1 ? `<button class="journal-carousel-arrow left" type="button" onclick="journalPrev(${i})" aria-label="Previous photo">‹</button><button class="journal-carousel-arrow right" type="button" onclick="journalNext(${i})" aria-label="Next photo">›</button><div class="journal-photo-count">${slide+1} / ${photos.length}</div>` : ''}
+         </div>
+         ${photos.length>1 ? `<div class="journal-dots">${photos.map((_,pi)=>`<button type="button" class="journal-dot ${pi===slide?'active':''}" onclick="journalGoTo(${i},${pi})" aria-label="Photo ${pi+1}"></button>`).join('')}</div>` : ''}
+         <div class="journal-body">
+           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
+             <div class="journal-entry-label">MEMORY DETAILS</div>
+             <button class="btn-close" type="button" onclick="deleteJournal(${i})" title="Delete entry">✕</button>
+           </div>
+           <div class="journal-edit-grid">
+             <label>DATE<input class="editable-text" value="${esc(j.date||'')}" placeholder="Date" oninput="updateJournalField(${i},'date',this.value)"></label>
+             <label>LOCATION<input class="editable-text" value="${esc(j.location||'')}" placeholder="Where was this?" oninput="updateJournalField(${i},'location',this.value)"></label>
+           </div>
+           <label class="journal-summary-label">SUMMARY<textarea class="editable-text journal-summary" placeholder="What happened? What do you want to remember?" oninput="updateJournalField(${i},'note',this.value)">${esc(j.note||'')}</textarea></label>
+           <div class="journal-actions">
+             <button class="btn sm" type="button" onclick="captureJournalForEntry(${i})">📷 Add Photos</button>
+             <button class="btn soft sm" type="button" onclick="chooseJournalPhoto(${i})">🖼️ Choose Photos</button>
+             ${photos.length ? `<button class="btn soft sm" type="button" onclick="downloadJournalPhotos(${i})" title="Download all photos from this memory">⬇ Download Photos</button><button class="btn-close journal-delete-photo" type="button" onclick="deleteJournalPhoto(${i},${slide})" title="Remove this photo">🗑 Remove Photo</button>` : ''}
+           </div>
+           ${photos.length ? `<div class="journal-photo-strip">${photos.map((p,pi)=>`<button type="button" class="journal-thumb ${pi===slide?'active':''}" onclick="journalGoTo(${i},${pi})"><img src="${esc(p)}" alt="Photo ${pi+1}"></button>`).join('')}</div>` : ''}
+         </div>
+       </div>`;
+     }).join('')}
+   </div>`;
+ }
+
+ if(activeTab==='budget') {
+   const spent = t.expenses.reduce((s, e) => s + (Number(e.amount)||0), 0);
+   const remaining = (t.budgetGoal || 0) - spent;
+   return `
+   <div class="section-title">
+     <div><h2>Budget & Expense Tracker 💰</h2></div>
+     <button class="btn soft" onclick="addExpense()">＋ Add Expense</button>
+   </div>
+   <div class="budget-grid">
+     <div class="budget-card">
+       <small>PLANNED BUDGET ($)</small>
+       <div class="amount" style="color:var(--forest)">
+         $<input type="number" class="editable-text" style="font-size:28px; font-weight:700; color:var(--forest); font-family:'Fraunces', serif; display:inline; width:160px; padding:0" value="${t.budgetGoal || 0}" onchange="activeTrip.budgetGoal=Number(this.value);save();renderTrip()">
+       </div>
+     </div>
+     <div class="budget-card">
+       <small>ACTUAL TOTAL SPENT</small>
+       <div class="amount" style="color:var(--terracotta)">$${spent.toLocaleString()}</div>
+     </div>
+     <div class="budget-card">
+       <small>REMAINING BALANCE</small>
+       <div class="amount" style="color:${remaining < 0 ? '#a64238' : 'var(--forest)'}">$${remaining.toLocaleString()}</div>
+     </div>
+   </div>
+   <div class="card">
+     ${t.expenses.map((e, i) => `
+       <div class="expense-item">
+         <input class="editable-text" style="font-weight:600" value="${esc(e.title)}" onchange="activeTrip.expenses[${i}].title=this.value;save()">
+         <div>
+           <label style="font-size:9px; font-weight:700; color:var(--muted)">PLANNED ($)</label>
+           <input type="number" class="editable-text" style="font-weight:700" value="${e.planned||0}" onchange="activeTrip.expenses[${i}].planned=Number(this.value);save();renderTrip()">
+         </div>
+         <div>
+           <label style="font-size:9px; font-weight:700; color:var(--forest)">ACTUAL ($)</label>
+           <input type="number" class="editable-text" style="font-weight:700; color:var(--forest)" value="${e.amount||0}" onchange="activeTrip.expenses[${i}].amount=Number(this.value);save();renderTrip()">
+         </div>
+         <button class="btn-close" onclick="deleteExpense(${i})">✕</button>
+       </div>
+     `).join('')}
+   </div>`;
+ }
+
+ return `<div>Panel context loading...</div>`;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toggleDayAccordion(index) {
+  const card = document.getElementById(`day-card-${index}`);
+  if (card) card.classList.toggle('open');
+}
+
+function addDest() {
+  const name = prompt('City or Destination Name:');
+  if (name) { activeTrip.destinations.push({ name }); save(); renderTrip(); }
+}
+function updateDestName(i, val) { activeTrip.destinations[i].name = val; save(); renderTrip(); }
+function removeDest(i) { activeTrip.destinations.splice(i,1); save(); renderTrip(); }
+
+function addTodo() { activeTrip.todoList.push({ id: 'td_'+Date.now(), title: 'New Task', cat: 'General', done: false }); save(); renderTrip(); }
+function toggleTodo(i) { activeTrip.todoList[i].done = !activeTrip.todoList[i].done; save(); renderTrip(); }
+function deleteTodo(i) { activeTrip.todoList.splice(i, 1); save(); renderTrip(); }
+
+function addDay() {
+  ensureTripCollections(activeTrip);
+  const last=activeTrip.itinerary.at(-1);
+  const next=last && last.dateKey ? (()=>{ const d=new Date(last.dateKey+'T00:00:00'); d.setDate(d.getDate()+1); return {dateKey:d.toISOString().slice(0,10),month:d.toLocaleString('en-US',{month:'short'}).toUpperCase(),day:String(d.getDate())}; })() : {month:'DAY',day:String(activeTrip.itinerary.length+1)};
+  activeTrip.itinerary.push({...next,place:'',events:[]}); save(); renderTrip();
+}
+function deleteDay(i) { activeTrip.itinerary.splice(i, 1); save(); renderTrip(); }
+function formatTime12(hour, minute) {
+  const h=hour%12 || 12;
+  return `${h}:${String(minute).padStart(2,'0')} ${hour<12?'AM':'PM'}`;
+}
+function timeToMinutes(value) {
+  const m=String(value||'').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if(!m) return null;
+  let h=Number(m[1]), min=Number(m[2]);
+  if(h<1 || h>12 || min<0 || min>59) return null;
+  const ap=m[3].toUpperCase();
+  if(ap==='AM' && h===12) h=0;
+  if(ap==='PM' && h!==12) h+=12;
+  return h*60+min;
+}
+function timeOptions(selected) {
+  const selectedMin=timeToMinutes(selected);
+  let html='';
+  for(let mins=0; mins<1440; mins+=5){
+    const h=Math.floor(mins/60), m=mins%60, label=formatTime12(h,m);
+    html+=`<option value="${label}" ${mins===selectedMin?'selected':''}>${label}</option>`;
+  }
+  if(selectedMin===null && selected) html=`<option value="${esc(selected)}" selected>${esc(selected)}</option>`+html;
+  return html;
+}
+function updateItineraryEventTime(dayIdx,eventIdx,value){
+  const e=activeTrip.itinerary?.[dayIdx]?.events?.[eventIdx];
+  if(!e) return;
+  e.time=value; save();
+}
+function addEvent(dayIdx) {
+  activeTrip.itinerary[dayIdx].events.push({ id: 'e_'+Date.now(), time: '12:00 PM', title: 'New Activity', note: '' });
+  save(); renderTrip();
+}
+function deleteEvent(dayIdx, eventIdx) { activeTrip.itinerary[dayIdx].events.splice(eventIdx, 1); save(); renderTrip(); }
+
+function addTransport() {
+  activeTrip.transport.push({ id: 't_'+Date.now(), icon: '✈️', title: 'Flight / Train', depStation: '', arrStation: '', tag: 'Booked' });
+  save(); renderTrip();
+}
+function deleteTransport(i) { activeTrip.transport.splice(i, 1); save(); renderTrip(); }
+
+function addBooking() { activeTrip.bookings.push({ id: 'b_'+Date.now(), icon: '🏨', title: 'Reservation', detail: '', status: 'Booked' }); save(); renderTrip(); }
+function deleteBooking(i) { activeTrip.bookings.splice(i, 1); save(); renderTrip(); }
+
+function addPlace() { activeTrip.places.push({ id: 'p_'+Date.now(), title: 'New Spot', cat: 'Dining', note: '' }); save(); renderTrip(); }
+function deletePlace(i) { activeTrip.places.splice(i, 1); save(); renderTrip(); }
+
+function addJournal() { activeTrip.journal.push({ id: 'j_'+Date.now(), title: 'New Entry', date: '', location: '', photos: [], photo: '', note: '', summary: '' }); save(); renderTrip(); }
+
+function updatePhoto(i) {
+  chooseJournalPhoto(i);
+}
+
+function journalLightboxEnsure(){
+  if(document.getElementById('journal-lightbox')) return;
+  const wrap=document.createElement('div');
+  wrap.id='journal-lightbox';
+  wrap.className='modal-overlay';
+  wrap.innerHTML=`
+    <div style="width:min(1100px,96vw);max-height:94vh;background:#111;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.45)">
+      <button type="button" onclick="closeJournalLightbox()" style="position:absolute;right:14px;top:14px;z-index:4;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:#222;font-size:22px;cursor:pointer">✕</button>
+      <div style="height:min(78vh,760px);display:flex;align-items:center;justify-content:center;position:relative">
+        <img id="journal-lightbox-image" src="" alt="Journal photo" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block">
+        <button id="journal-lightbox-prev" type="button" onclick="journalLightboxPrev()" style="display:none;position:absolute;left:18px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.9);font-size:32px;cursor:pointer">‹</button>
+        <button id="journal-lightbox-next" type="button" onclick="journalLightboxNext()" style="display:none;position:absolute;right:18px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.9);font-size:32px;cursor:pointer">›</button>
+      </div>
+      <div id="journal-lightbox-caption" style="padding:12px 18px;color:#fff;text-align:center;font-size:12px"></div>
+    </div>`;
+  wrap.addEventListener('click',e=>{ if(e.target===wrap) closeJournalLightbox(); });
+  document.body.appendChild(wrap);
+}
+let journalLightboxEntry=null;
+let journalLightboxIndex=0;
+const journalCardSlides={};
+function journalGoTo(entryIndex, slide){
+  const photos=journalPhotos(activeTrip.journal[entryIndex]);
+  if(!photos.length) return;
+  const idx=((slide%photos.length)+photos.length)%photos.length;
+  journalCardSlides[entryIndex]=idx;
+  const card=document.querySelector(`[data-journal-card-image="${entryIndex}"]`);
+  if(card) card.src=photos[idx];
+  const counter=document.querySelectorAll('.journal-card')[entryIndex]?.querySelector('.journal-photo-count');
+  if(counter) counter.textContent=`${idx+1} / ${photos.length}`;
+  const dots=document.querySelectorAll('.journal-card')[entryIndex]?.querySelectorAll('.journal-dot');
+  dots?.forEach((d,k)=>d.classList.toggle('active',k===idx));
+}
+function journalPrev(i){ const photos=journalPhotos(activeTrip.journal[i]); journalGoTo(i,(journalCardSlides[i]??0)-1); }
+function journalNext(i){ const photos=journalPhotos(activeTrip.journal[i]); journalGoTo(i,(journalCardSlides[i]??0)+1); }
+function openJournalLightbox(entryIndex, slide=0){
+  const photos=journalPhotos(activeTrip.journal[entryIndex]);
+  if(!photos.length) return;
+  journalLightboxEnsure();
+  journalLightboxEntry=entryIndex;
+  journalLightboxIndex=Math.max(0,Math.min(slide,photos.length-1));
+  renderJournalLightbox();
+  document.getElementById('journal-lightbox').classList.add('open');
+}
+function renderJournalLightbox(){
+  const photos=journalPhotos(activeTrip.journal[journalLightboxEntry]||{});
+  if(!photos.length) return closeJournalLightbox();
+  journalLightboxIndex=((journalLightboxIndex%photos.length)+photos.length)%photos.length;
+  const img=document.getElementById('journal-lightbox-image');
+  const cap=document.getElementById('journal-lightbox-caption');
+  if(img) img.src=photos[journalLightboxIndex];
+  if(cap) cap.textContent=`${journalLightboxIndex+1} of ${photos.length} • ${activeTrip.journal[journalLightboxEntry].title||'Travel Memory'}`;
+  const prev=document.getElementById('journal-lightbox-prev'), next=document.getElementById('journal-lightbox-next');
+  if(prev) prev.style.display=photos.length>1?'block':'none';
+  if(next) next.style.display=photos.length>1?'block':'none';
+}
+function journalLightboxPrev(){ journalLightboxIndex--; renderJournalLightbox(); }
+function journalLightboxNext(){ journalLightboxIndex++; renderJournalLightbox(); }
+function closeJournalLightbox(){ const el=document.getElementById('journal-lightbox'); if(el) el.classList.remove('open'); journalLightboxEntry=null; }
+
+function deleteJournal(i) { activeTrip.journal.splice(i, 1); save(); renderTrip(); }
+
+function addExpense() { activeTrip.expenses.push({ id: 'ex_'+Date.now(), title: 'Expense', category: 'General', amount: 0, planned: 0 }); save(); renderTrip(); }
+function deleteExpense(i) { activeTrip.expenses.splice(i, 1); save(); renderTrip(); }
+
+function addNewTrip() {
+  if (!currentUser) return;
+  const name = prompt('Trip Name:');
+  if (!name) return;
+  const newT = {
+    id: 'trip_' + Date.now(),
+    owner: currentUser,
+    collaborators: [],
+    name,
+    flag: '✈️',
+    coverBg: 'linear-gradient(135deg, #5c7662, #8a7a5a)',
+    dates: 'Dates TBD',
+    status: 'Planning',
+    description: '',
+    tabOrder: DEFAULT_TABS.map(t => t.id),
+    destinations: [],
+    savedRoutes: [],
+    budgetGoal: 3000,
+    todoList: [],
+    itinerary: [],
+    transport: [],
+    bookings: [],
+    packingLists: [{ id: 'pl_' + Date.now(), name: 'Main Suitcase 🧳', person: '', items: [] }],
+    activePackingListId: '',
+    places: [],
+    journal: [],
+    expenses: []
+  };
+  newT.activePackingListId = newT.packingLists[0].id;
+  trips.push(newT);
+  save();
+  openTrip(newT.id);
+  toast('New trip created!');
+}
+
+async function deleteTrip(id) {
+  const trip = trips.find(t => t.id === id);
+  if (!trip) return;
+  if (trip.owner !== currentUser) {
+    toast('Only the trip owner can delete this trip.');
+    return;
+  }
+  if (!confirm(`Delete “${trip.name || 'this trip'}” completely? This cannot be undone.`)) return;
+
+  if (cloudReady) {
+    const { error } = await sb.from('trips').delete().eq('id', id).eq('owner_id', currentUser);
+    if (error) {
+      console.error(error);
+      toast('Could not delete trip: ' + error.message);
+      return;
+    }
+  }
+
+  trips = trips.filter(t => t.id !== id);
+  if (activeTrip?.id === id) activeTrip = null;
+  showHome();
+  toast('Trip deleted.');
+}
+
+function exportData() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trips, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `pockettrip_backup_${Date.now()}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+initAuth();
+
+
+// --- TripTabs / Pockettrip enhancements applied to this uploaded build ---
+const TRAVEL_WISHLIST_TAGS = ['Dining','Attractions','Parks','Temples/Shrines','Shops','Museums','Gardens','Markets','Neighborhoods','Beaches','Hiking/Nature','Activities/Experiences','Tours','Cafés','Bars/Nightlife','Entertainment','Cultural Sites','Historic Sites','Photography','Day Trips','Other'];
+
+function editDestination(index) {
+  const current = (activeTrip.destinations && activeTrip.destinations[index]) ? activeTrip.destinations[index].name : '';
+  const name = prompt('City or destination name:', current);
+  if (name && name.trim()) updateDestName(index, name.trim());
+}
+
+function addDest() {
+  const name = prompt('City or destination name:');
+  if (name && name.trim()) {
+    if (!activeTrip.destinations) activeTrip.destinations = [];
+    activeTrip.destinations.push({name:name.trim()});
+    save();
+    renderTrip();
+  }
+}
+
+function ensureJournalCameraUI() {
+  if (document.getElementById('journal-camera-modal')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'journal-camera-modal';
+  wrap.className = 'modal-overlay';
+  wrap.innerHTML = `
+    <div class="modal-card" style="width:min(700px,94vw)">
+      <div class="modal-header"><h3>Camera 📷</h3><button class="btn-close" onclick="closeJournalCamera()">✕</button></div>
+      <div style="background:#111; border-radius:14px; overflow:hidden; border:1.5px solid var(--line-bold)">
+        <video id="journal-live-video" autoplay playsinline muted style="width:100%; max-height:62vh; object-fit:cover; display:block"></video>
+      </div>
+      <canvas id="journal-live-canvas" style="display:none"></canvas>
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:16px">
+        <button class="btn primary" onclick="takeJournalPhoto()">📸 Take Photo</button>
+        <button class="btn" onclick="switchJournalCamera()">🔄 Switch Camera</button>
+        <button class="btn soft" onclick="fallbackJournalCameraPicker()">🖼️ Use Device Photo Picker</button>
+      </div>
+      <p style="font-size:12px; color:var(--muted); margin:14px 0 0; text-align:center">Your browser may require HTTPS or localhost before it allows live camera access. The device photo picker remains available as a fallback.</p>
+    </div>`;
+  document.body.appendChild(wrap);
+}
+
+let journalCameraStream = null;
+let journalCameraFacing = 'environment';
+let journalCameraTargetIndex = null;
+
+async function openJournalCamera(targetIndex=null) {
+  ensureJournalCameraUI();
+  journalCameraTargetIndex = targetIndex;
+  document.getElementById('journal-camera-modal').classList.add('open');
+  try {
+    await startJournalCameraStream();
+  } catch (err) {
+    toast('Live camera access was unavailable. Use the device photo picker instead.');
+  }
+}
+
+async function startJournalCameraStream() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Camera API unavailable');
+  if (journalCameraStream) journalCameraStream.getTracks().forEach(track => track.stop());
+  journalCameraStream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:{ideal:journalCameraFacing}}, audio:false });
+  const video = document.getElementById('journal-live-video');
+  video.srcObject = journalCameraStream;
+  await video.play();
+}
+
+async function switchJournalCamera() {
+  journalCameraFacing = journalCameraFacing === 'environment' ? 'user' : 'environment';
+  try { await startJournalCameraStream(); } catch (err) { toast('Unable to switch cameras on this device.'); }
+}
+
+function takeJournalPhoto() {
+  const video=document.getElementById('journal-live-video');
+  const canvas=document.getElementById('journal-live-canvas');
+  if(!video || !video.videoWidth) { toast('Camera is not ready yet.'); return; }
+  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  const ctx=canvas.getContext('2d');
+  if(journalCameraFacing==='user'){ctx.translate(canvas.width,0);ctx.scale(-1,1);}
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  const data=canvas.toDataURL('image/jpeg',0.9);
+  if(journalCameraTargetIndex!==null && activeTrip.journal[journalCameraTargetIndex]){
+    const j=activeTrip.journal[journalCameraTargetIndex];
+    j.photos=[...journalPhotos(j),data]; j.photo=j.photos[0]||'';
+    save(); renderTrip();
+    // Re-open the camera target after render so the user can keep taking photos.
+    openJournalCamera(journalCameraTargetIndex);
+    toast('Photo captured — take another or close the camera.');
+  } else {
+    activeTrip.journal.push({id:'j_'+Date.now(),title:'New Memory',date:'',location:'',photos:[data],photo:data,note:'',summary:''});
+    save(); renderTrip();
+    openJournalCamera(activeTrip.journal.length-1);
+    toast('Photo captured — take another or close the camera.');
+  }
+}
+
+function closeJournalCamera() {
+  if (journalCameraStream) { journalCameraStream.getTracks().forEach(track => track.stop()); journalCameraStream = null; }
+  const modal = document.getElementById('journal-camera-modal');
+  if (modal) modal.classList.remove('open');
+  journalCameraTargetIndex = null;
+}
+
+function chooseJournalPhoto(index){
+  const input=document.getElementById('journal-camera-input');
+  if(!input || !activeTrip.journal[index]) return;
+  input.accept='image/*';
+  input.removeAttribute('capture');
+  input.multiple=true;
+  input.value='';
+  input.onchange=e=>{
+    const files=[...(e.target.files||[])];
+    if(!files.length) return;
+    const j=activeTrip.journal[index];
+    const existing=journalPhotos(j);
+    let pending=files.length;
+    const added=[];
+    files.forEach(file=>{
+      const reader=new FileReader();
+      reader.onload=evt=>{
+        added.push(evt.target.result);
+        if(--pending===0){
+          j.photos=[...existing,...added];
+          j.photo=j.photos[0]||'';
+          save(); renderTrip(); toast(`${added.length} photo${added.length===1?'':'s'} added!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value='';
+  };
+  input.click();
+}
+
+function captureJournalForEntry(index) { openJournalCamera(index); }
+function fallbackJournalCameraPicker(){
+  const input=document.getElementById('journal-camera-input');
+  if(!input) return;
+  const target=journalCameraTargetIndex;
+  input.accept='image/*'; input.removeAttribute('capture'); input.multiple=true; input.value='';
+  input.onchange=e=>{
+    const files=[...(e.target.files||[])]; if(!files.length) return;
+    const targetEntry=target!==null && activeTrip.journal[target] ? activeTrip.journal[target] : null;
+    let pending=files.length; const out=[];
+    files.forEach(f=>{ const r=new FileReader(); r.onload=ev=>{ out.push(ev.target.result); if(--pending===0){
+      if(targetEntry){ targetEntry.photos=[...journalPhotos(targetEntry),...out]; targetEntry.photo=targetEntry.photos[0]||''; }
+      else { activeTrip.journal.push({id:'j_'+Date.now(),title:'New Memory',date:'',location:'',photos:out,photo:out[0]||'',note:'',summary:''}); }
+      closeJournalCamera(); save(); renderTrip(); toast(`${out.length} photo${out.length===1?'':'s'} added!`);
+    }}; r.readAsDataURL(f); });
+    input.value='';
+  };
+  input.click();
+}
+
+// Trip header: summary, collaborators, and destinations live ONLY here.
+function renderTrip() {
+  updateNavActiveState();
+  const t = activeTrip;
+  const currentTabs = getOrderedTabs(t);
+  const totalExpenses = (t.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const daysCount = (t.itinerary || []).length;
+  const coverStyle = t.coverBg
+    ? (t.coverBg.startsWith('http') || t.coverBg.startsWith('data:')
+        ? `background-image:linear-gradient(rgba(0,0,0,.16),rgba(0,0,0,.62)),url('${t.coverBg}');background-size:cover;background-position:center;`
+        : `background:${t.coverBg};`)
+    : 'background:linear-gradient(135deg,#5c7662,#8a7a5a);';
+
+  document.getElementById('content').innerHTML = `
+  <div class="trip-cover-banner" style="${coverStyle}">
+    <div style="width:100%">
+      <div style="display:flex;justify-content:space-between;gap:20px;align-items:flex-start;flex-wrap:wrap">
+        <div style="display:flex;gap:18px;align-items:center;min-width:0">
+          <div class="editable-icon-btn" onclick="openIconModal()" title="Click to choose preset emoji or image icon">${renderTripIconDisplay(t.flag)}</div>
+          <div style="min-width:0;flex:1">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div class="eyebrow" style="color:#fff">${esc(t.status)}</div>
+              <select class="tag-select" style="padding:2px 6px;font-size:10px" onchange="activeTrip.status=this.value;save();renderTrip()">
+                <option value="Planning" ${t.status==='Planning'?'selected':''}>Planning</option>
+                <option value="Confirmed" ${t.status==='Confirmed'?'selected':''}>Confirmed</option>
+                <option value="Completed" ${t.status==='Completed'?'selected':''}>Completed</option>
+              </select>
+            </div>
+            <input class="editable-text" style="font-size:32px;font-weight:700;font-family:'Fraunces',serif;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.25);max-width:620px" value="${esc(t.name)}" onchange="activeTrip.name=this.value;save()">
+            <input class="editable-text" style="font-size:14px;color:#fff;font-weight:500;max-width:360px" value="${esc(t.dates)}" placeholder="October 1 - October 4" onchange="updateTripDates(this.value)">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn sm" onclick="openCoverModal('${t.id}')">✏️ Cover</button>
+          <button class="btn sm" onclick="showHome()">← Back</button>
+          ${t.owner === currentUser ? `<button class="btn danger sm" onclick="deleteTrip('${t.id}')">Delete Trip</button>` : ''}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">
+        <div class="header-stat-box" style="padding:7px 12px"><div class="num" style="font-size:18px">${daysCount}</div><small>Days</small></div>
+        <div class="header-stat-box" style="padding:7px 12px"><div class="num" style="font-size:18px">$${totalExpenses.toLocaleString()}</div><small>Expenses</small></div>
+        <div style="flex:1;min-width:220px;padding:8px 12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:10px">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;opacity:.85">Trip Summary</div>
+          <input class="editable-text" style="width:100%;color:#fff;background:transparent;border:0;border-bottom:1px dashed rgba(255,255,255,.4);font-size:12px;padding:2px 0" value="${esc(t.description||'')}" placeholder="Add a short trip summary..." onchange="activeTrip.description=this.value;save()">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:8px">
+        <div style="padding:8px 12px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);border-radius:10px">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.85">Collaborators</div>
+            <span class="collab-avatar" title="Owner: ${esc(t.owner)}">${esc((t.owner||'?')[0])}</span>
+            ${(t.collaborators||[]).map(c=>`<span class="collab-avatar" style="background:var(--sage)" title="Collaborator: ${esc(c)}">${esc((c||'?')[0])}</span>`).join('')}
+            <button class="btn sm" style="padding:2px 8px;font-size:10px" onclick="addCollaborator('${t.id}')">＋ Add</button>
+          </div>
+        </div>
+        <div style="padding:8px 12px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);border-radius:10px">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+            <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;opacity:.85">Destinations / Cities</div>
+            ${(t.destinations||[]).map((d,i)=>`<span class="trip-city-chip"><button class="trip-city-name" type="button" onclick="editDestination(${i})">${esc(d.name)}</button><button class="trip-city-remove" type="button" title="Remove ${esc(d.name)}" onclick="removeDest(${i})">×</button></span>`).join('')}
+            <button class="btn soft sm" type="button" style="padding:2px 8px;font-size:10px" onclick="addDest()">＋ Add City</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs-container" id="tabs-container">
+    ${currentTabs.map((tab,idx)=>`
+      <button class="tab-btn ${activeTab===tab.id?'active':''}" draggable="true"
+        ondragstart="handleTabDragStart(event,${idx})" ondragover="handleTabDragOver(event)" ondrop="handleTabDrop(event,${idx})"
+        onclick="activeTab='${tab.id}';renderTrip()">
+        <span class="drag-handle">⋮⋮</span><span>${tab.label}</span>
+      </button>`).join('')}
+  </div>
+  <div class="panel">${tabContent(t)}</div>`;
+}
+
+// --- Pockettrip usability fixes ---
+// --- Journal carousel state ---
+let journalCarouselIndex = {};
+function updateJournalField(index, field, value){
+  ensureTripCollections(activeTrip);
+  const j=activeTrip.journal[index];
+  if(!j) return;
+  j[field]=value;
+  if(field==='note') j.summary=value;
+  save();
+}
+function journalGoTo(index, photoIndex){
+  const photos=journalPhotos(activeTrip.journal[index]||{});
+  if(!photos.length) return;
+  journalCarouselIndex[index]=Math.max(0,Math.min(photoIndex,photos.length-1));
+  renderTrip();
+}
+function journalNext(index){
+  const photos=journalPhotos(activeTrip.journal[index]||{}); if(!photos.length) return;
+  journalCarouselIndex[index]=((journalCarouselIndex[index]||0)+1)%photos.length; renderTrip();
+}
+function journalPrev(index){
+  const photos=journalPhotos(activeTrip.journal[index]||{}); if(!photos.length) return;
+  journalCarouselIndex[index]=((journalCarouselIndex[index]||0)-1+photos.length)%photos.length; renderTrip();
+}
+function deleteJournalPhoto(index, photoIndex){
+  const j=activeTrip.journal[index]; if(!j) return;
+  const photos=journalPhotos(j); if(!photos.length) return;
+  photos.splice(photoIndex,1); j.photos=photos; j.photo=photos[0]||'';
+  journalCarouselIndex[index]=Math.max(0,Math.min(journalCarouselIndex[index]||0,photos.length-1));
+  save(); renderTrip();
+}
+function downloadJournalPhotos(index){
+  const j=activeTrip.journal[index]; if(!j) return;
+  const photos=journalPhotos(j); if(!photos.length) return;
+  const base=String(j.title||'journal-memory').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase() || 'journal-memory';
+  photos.forEach((src,pi)=>{
+    const a=document.createElement('a');
+    a.href=src;
+    const mime=(String(src).match(/^data:([^;,]+)/)||[])[1]||'image/jpeg';
+    const ext=mime.split('/')[1]?.replace('jpeg','jpg')||'jpg';
+    a.download=`${base}-${pi+1}.${ext}`;
+    a.style.display='none';
+    document.body.appendChild(a);
+    setTimeout(()=>{ a.click(); a.remove(); }, pi*180);
+  });
+  toast(`${photos.length} photo${photos.length===1?'':'s'} queued for download.`);
+}
+function ensureTripCollections(t){
+  t.todoList ||= []; t.packingLists ||= []; t.journal ||= []; t.itinerary ||= []; t.outfitLocations ||= {}; t.outfitWeather ||= {};
+}
+function renderChecklistPanel(kind){
+  ensureTripCollections(activeTrip);
+  if(kind==='todo') return `<div class="section-title"><div><h2>To-Do List 📋</h2><span class="muted" style="font-size:13px">Keep trip tasks in one place.</span></div><button class="btn soft" onclick="addTodo()">＋ Add Task</button></div><div>${activeTrip.todoList.map((x,i)=>`<div class="checklist-item ${x.done?'done':''}"><input class="custom-checkbox" type="checkbox" ${x.done?'checked':''} onchange="activeTrip.todoList[${i}].done=this.checked;save();renderTrip()"><input class="editable-text" value="${esc(x.title||'')}" onchange="activeTrip.todoList[${i}].title=this.value;save()"><button class="btn-close" onclick="activeTrip.todoList.splice(${i},1);save();renderTrip()">✕</button></div>`).join('')||'<p style="color:var(--muted)">No tasks yet.</p>'}</div>`;
+  return `<div class="section-title"><div><h2>Packing Lists 🎒</h2><span class="muted" style="font-size:13px">Organize everything you need to bring.</span></div><button class="btn soft" onclick="addPackingList()">＋ New List</button></div>${activeTrip.packingLists.map(l=>`<details class="packing-details" open><summary class="packing-summary"><input class="editable-text packing-title-input" value="${esc(l.name||'Packing List')}" onclick="event.preventDefault()" onchange="l=activeTrip.packingLists.find(x=>x.id==='${l.id}');l.name=this.value;save()"><span>${(l.items||[]).filter(x=>x.done).length}/${(l.items||[]).length}</span></summary><div class="packing-body"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><label style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">For</label><select class="tag-select" onchange="setPackingListPerson('${l.id}',this.value)"><option value="">Everyone</option>${[activeTrip.owner,...(activeTrip.collaborators||[])].filter(Boolean).map(person=>`<option value="${esc(person)}" ${String(l.person||'')===String(person)?'selected':''}>${esc(person)}</option>`).join('')}</select></div>${(l.items||[]).map((x,i)=>`<div class="checklist-item ${x.done?'done':''}"><input class="custom-checkbox" type="checkbox" ${x.done?'checked':''} onchange="togglePackingItem('${l.id}',${i})"><input class="editable-text" value="${esc(x.title||'')}" onchange="activeTrip.packingLists.find(x=>x.id==='${l.id}').items[${i}].title=this.value;save()"><button class="btn-close" onclick="deletePackingItem('${l.id}',${i})">✕</button></div>`).join('')}<button class="btn sm" onclick="addPackingItem('${l.id}')">＋ Add Item</button> <button class="btn-close" type="button" title="Delete list" aria-label="Delete list" onclick="deletePackingList('${l.id}')">✕</button></div></details>`).join('')||'<p style="color:var(--muted)">Create a packing list to get started.</p>'}`;
+}
+/* --- Outfit Planner --- */
+function outfitWeatherLabel(code){
+  const map={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light drizzle',53:'Drizzle',55:'Drizzle',56:'Freezing drizzle',57:'Freezing drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Rain showers',82:'Heavy showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorms',96:'Thunderstorms',99:'Thunderstorms'};
+  return map[Number(code)] || 'Variable';
+}
+function outfitIcon(code){
+  code=Number(code);
+  if([61,63,65,80,81,82,95,96,99].includes(code)) return '🌧️';
+  if([71,73,75,77,85,86].includes(code)) return '❄️';
+  if([45,48].includes(code)) return '🌫️';
+  if([1,2,3].includes(code)) return '⛅';
+  return '☀️';
+}
+function outfitDateKey(d){ return d.dateKey || `${String(d.month||'').toUpperCase()}-${d.day}`; }
+function outfitParticipants(t){
+  return [t.owner,...(t.collaborators||[])].filter(Boolean);
+}
+function outfitPackedItems(t, person){
+  const out=[];
+  (t.packingLists||[]).forEach((list,li) => {
+    if(person ? String(list.person||'')!==String(person) : String(list.person||'')!=='') return;
+    (list.items||[]).forEach((item,ii) => {
+      const title=String(item.title||'').trim(); if(!title) return;
+      out.push({key:`${list.id||('list_'+li)}::${ii}`,title,done:!!item.done,list:list.name||'Packing List',person:list.person||''});
+    });
+  });
+  return out;
+}
+function outfitRecommendationMatches(item, rec){
+  return !!item && !!rec && Array.isArray(rec.terms) && rec.terms.some(term => item.title.toLowerCase().includes(term));
+}
+function setOutfitSelection(dayIndex, personEncoded, recIndex, value){
+  ensureTripCollections(activeTrip);
+  const person=decodeURIComponent(personEncoded||'');
+  const d=activeTrip.itinerary?.[dayIndex]; if(!d) return;
+  const key=outfitDateKey(d);
+  activeTrip.outfitSelections[key] ||= {};
+  activeTrip.outfitSelections[key][person] ||= {};
+  if(value) activeTrip.outfitSelections[key][person][String(recIndex)]=value;
+  else delete activeTrip.outfitSelections[key][person][String(recIndex)];
+  save();
+  renderTrip();
+}
+function outfitHas(items, terms){ return items.some(x=>terms.some(term=>x.title.toLowerCase().includes(term))); }
+function outfitRecommendations(weather, items){
+  const temp=Number(weather?.max ?? 65);
+  const min=Number(weather?.min ?? temp);
+  const rain=Number(weather?.rain ?? 0);
+  const snow=Number(weather?.snow ?? 0);
+  const rec=[];
+  const add=(text,terms=[],required=false,slot='extra')=>rec.push({text,terms,required,slot});
+
+  // Keep the weather guidance intuitive, but make sure every suggested outfit
+  // has a complete base: a top, a bottom, and shoes. Weather-appropriate layers
+  // are then added around that base rather than replacing it.
+  if(Number.isFinite(temp) && temp>=80){
+    add('Lightweight top',['t-shirt','tee','tank','blouse','shirt','top']);
+    add('Shorts, skirt, or lightweight pants',['shorts','skirt','lightweight pants','linen pants','wide leg pants','pants','trousers']);
+    add('Comfortable walking shoes',['sneakers','walking shoes','shoes','flats','sandals']);
+  } else if(Number.isFinite(min) && min<=45){
+    add('Warm base layer',['thermal','long sleeve','base layer','long-sleeve']);
+    add('Long pants or jeans',['pants','trousers','jeans','leggings']);
+    add(snow>0 ? 'Waterproof warm footwear' : 'Comfortable walking shoes',snow>0 ? ['boots','waterproof'] : ['sneakers','walking shoes','shoes','flats','boots']);
+    add('Sweater or fleece',['sweater','fleece','cardigan','hoodie']);
+    add('Warm coat',['coat','jacket','parka','puffer'],true);
+  } else if(Number.isFinite(min) && min<=60){
+    add('Light layer / sweater',['sweater','cardigan','hoodie','light jacket','jacket','long sleeve']);
+    add('Jeans, long pants, or skirt',['jeans','pants','trousers','leggings','skirt']);
+    add('Comfortable walking shoes',['sneakers','walking shoes','shoes','flats','boots']);
+  } else {
+    add('Everyday top',['t-shirt','tee','tank','shirt','blouse','top']);
+    add('Pants, skirt, or lightweight bottom',['pants','trousers','jeans','shorts','skirt','lightweight pants']);
+    add('Comfortable walking shoes',['sneakers','walking shoes','shoes','flats','sandals','boots']);
+  }
+
+  // Rain protection should be driven by the actual weather condition as well as
+  // precipitation probability. A day explicitly forecast as rain/heavy rain/showers
+  // should never lose its rain-layer recommendation just because the probability
+  // happens to fall below the numeric threshold.
+  const rainCodes=[51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99];
+  const heavyRainCodes=[65,82,95,96,99];
+  const hasRainCondition=rainCodes.includes(Number(weather?.code));
+  const hasHeavyRainCondition=heavyRainCodes.includes(Number(weather?.code));
+  if(rain>=35 || hasRainCondition) add(hasHeavyRainCondition ? 'Rain jacket or waterproof layer' : 'Rain layer or umbrella',['rain jacket','raincoat','poncho','umbrella','waterproof','water resistant'],true,'weather');
+  if(temp>=78) add('Sun protection',['sunscreen','sunblock','hat','cap','sunglasses'],false,'weather');
+  if(temp<55) add('Warm accessories',['scarf','gloves','beanie','hat'],false,'weather');
+  return rec;
+}
+function renderOutfitPlanner(t){
+  ensureTripCollections(t);
+  if(!t.outfitLocations) t.outfitLocations={};
+  t.outfitSelections ||= {};
+  const destinations=(t.destinations||[]).map(d=>d.name).filter(Boolean);
+  const days=t.itinerary||[];
+  const people=outfitParticipants(t);
+  const packedByPerson={};
+  people.forEach(person=>packedByPerson[person]=outfitPackedItems(t,person));
+  const shared=outfitPackedItems(t,'');
+  return `<div class="section-title">
+    <div><h2>Outfit Planner 👗</h2><span class="muted" style="font-size:13px">Plan each day around each person's packed clothes, destination, and the weather. Weather is fetched from Open-Meteo when available.</span></div>
+    <button class="btn soft" onclick="refreshOutfitWeather()">↻ Refresh Weather</button>
+  </div>
+
+  <div class="outfit-days">
+    ${days.length ? days.map((d,i)=>{
+      const loc=t.outfitLocations[outfitDateKey(d)] || d.weatherLocation || d.place || destinations[0] || '';
+      const weather=(t.outfitWeather||{})[outfitDateKey(d)];
+      const options=[...new Set([loc,...destinations,d.place].filter(Boolean))];
+      const criteria=weather ? outfitRecommendations(weather,[]) : [];
+      return `<div class="outfit-day-card">
+        <div class="outfit-day-head">
+          <div><div class="outfit-date">${esc(d.month||'')} ${esc(d.day||'')}</div><div class="outfit-place">${esc(d.place||'Plan your day')}</div></div>
+          <div class="outfit-location"><label>📍 Location</label><select class="tag-select" onchange="setOutfitLocation(${i},this.value)">${options.map(o=>`<option value="${esc(o)}" ${o===loc?'selected':''}>${esc(o)}</option>`).join('')}<option value="__custom__">+ Custom location…</option></select></div>
+        </div>
+        ${weather?.error ? `<div class="outfit-weather outfit-weather-empty"><span>⚠️</span><div><strong>Weather unavailable</strong><span>${esc(weather.message||'Try Refresh Weather again.')}</span></div></div>` : weather ? `<div class="outfit-weather"><div class="outfit-weather-main"><span class="outfit-weather-icon">${outfitIcon(weather.code)}</span><div><strong>${Math.round(weather.min)}°–${Math.round(weather.max)}°F</strong><span>${esc(outfitWeatherLabel(weather.code))}</span></div></div><div class="outfit-weather-stats"><span>💧 ${Math.round(weather.rain||0)}% rain</span><span>💨 ${Math.round(weather.wind||0)} mph</span><small>${esc(weather.source||'Forecast')}</small></div></div>` : `<div class="outfit-weather outfit-weather-empty"><span>🌤️</span><div><strong>Weather not loaded yet</strong><span>Choose a location, then click Refresh Weather.</span></div></div>`}
+        ${criteria.length ? `<div class="outfit-criteria">${criteria.map(r=>`<span class="outfit-criterion">${esc(r.text)}</span>`).join('')}</div>` : ''}
+        <div class="outfit-suggestion"><div class="outfit-suggestion-title">Suggested outfits</div>${people.map(person=>{
+          const items=packedByPerson[person].concat(shared);
+          const selections=(t.outfitSelections[outfitDateKey(d)]||{})[person]||{};
+          const personEncoded=encodeURIComponent(person).replace(/'/g,'%27');
+          return `<div class="outfit-person"><div class="outfit-person-name">${esc(person)}</div>${criteria.length ? `<div class="outfit-option-grid">${criteria.map((r,ri)=>{
+            const matches=items.filter(item=>outfitRecommendationMatches(item,r));
+            const selected=selections[String(ri)]||'';
+            const validSelected=matches.some(item=>item.key===selected);
+            const rowClass=r.slot==='weather'?'weather':'core';
+            return `<div class="outfit-option-row ${rowClass}"><div class="outfit-option-label">${esc(r.text)}<small>${matches.length?'Choose from packing list':'Packing-list gap'}</small></div>${matches.length ? `<select onchange="setOutfitSelection(${i},'${personEncoded}',${ri},this.value)"><option value="">— Choose an item —</option>${matches.map(item=>`<option value="${esc(item.key)}" ${validSelected&&selected===item.key?'selected':''}>${esc(item.title)}${item.person?'':' · shared'}</option>`).join('')}</select>` : `<div class="outfit-gap">Nothing packed yet — this is a gap in the list.</div>`}</div>`;
+          }).join('')}</div>` : `<p class="muted" style="margin:0">Once weather loads, I'll suggest pieces from ${esc(person)}'s packing list.</p>`}</div>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('') : '<div class="card"><p class="muted">Add itinerary dates first and your outfit planner will appear here.</p></div>'}
+  </div>`;
+}
+async function geocodeOutfitLocation(location){
+  const q=encodeURIComponent(String(location||'').trim());
+  if(!q) throw new Error('No location');
+  const res=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=1&language=en&format=json`);
+  if(!res.ok) throw new Error('Geocoding failed');
+  const data=await res.json();
+  if(!data.results||!data.results.length) throw new Error(`Location not found: ${location}`);
+  return data.results[0];
+}
+async function fetchOutfitWeatherForDate(location,dateKey){
+  const iso=String(dateKey||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) throw new Error('Invalid itinerary date');
+  const geo=await geocodeOutfitLocation(location);
+  const target=new Date(`${iso}T12:00:00`);
+  if(Number.isNaN(target.getTime())) throw new Error('Invalid itinerary date');
+  const today=new Date(); today.setHours(12,0,0,0);
+  const diffDays=Math.round((target-today)/86400000);
+
+  // Open-Meteo is used for live forecasts. Its global best-match mode selects
+  // the most suitable available model for the coordinates (including ECMWF,
+  // NOAA, DWD, Met Office, etc.).
+  if(diffDays>=0 && diffDays<=15){
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=16`;
+    const res=await fetch(url); if(!res.ok) throw new Error(`Forecast request failed (${res.status})`);
+    const data=await res.json();
+    const idx=(data.daily?.time||[]).indexOf(iso);
+    if(idx<0) throw new Error('Forecast date is outside the available forecast window');
+    return {min:data.daily.temperature_2m_min[idx],max:data.daily.temperature_2m_max[idx],code:data.daily.weather_code[idx],rain:data.daily.precipitation_probability_max?.[idx]||0,wind:data.daily.wind_speed_10m_max?.[idx]||0,source:'Open-Meteo forecast'};
+  }
+
+  // For trips farther out, use a multi-year historical estimate for the same
+  // calendar period rather than pretending a long-range forecast is accurate.
+  const historicalYear=target.getFullYear()-1;
+  const end=new Date(target); end.setFullYear(historicalYear); end.setDate(end.getDate()+2);
+  const start=new Date(target); start.setFullYear(historicalYear); start.setDate(start.getDate()-2);
+  const s=start.toISOString().slice(0,10), e=end.toISOString().slice(0,10);
+  const url=`https://archive-api.open-meteo.com/v1/archive?latitude=${geo.latitude}&longitude=${geo.longitude}&start_date=${s}&end_date=${e}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+  const res=await fetch(url); if(!res.ok) throw new Error(`Historical weather request failed (${res.status})`);
+  const data=await res.json();
+  const mins=(data.daily?.temperature_2m_min||[]).filter(Number.isFinite), maxs=(data.daily?.temperature_2m_max||[]).filter(Number.isFinite);
+  if(!mins.length||!maxs.length) throw new Error('Historical weather unavailable');
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const codes=(data.daily?.weather_code||[]).filter(v=>Number.isFinite(Number(v)));
+  const rainValues=(data.daily?.precipitation_sum||[]).map(Number).filter(Number.isFinite);
+  const winds=(data.daily?.wind_speed_10m_max||[]).filter(Number.isFinite);
+  const rainyDays=rainValues.filter(v=>v>=1).length;
+  return {min:avg(mins),max:avg(maxs),code:codes[Math.floor(codes.length/2)]||0,rain:rainValues.length?Math.round((rainyDays/rainValues.length)*100):0,wind:winds.length?avg(winds):0,source:'Open-Meteo historical estimate'};
+}
+async function refreshOutfitWeather(){
+  ensureTripCollections(activeTrip); activeTrip.outfitWeather={}; save(); renderTrip();
+  const days=activeTrip.itinerary||[]; let done=0;
+  for(let i=0;i<days.length;i++){
+    const d=days[i], key=outfitDateKey(d); const loc=activeTrip.outfitLocations?.[key]||d.weatherLocation||d.place||(activeTrip.destinations||[])[0]?.name;
+    if(!loc || !d.dateKey) continue;
+    try { activeTrip.outfitWeather[key]=await fetchOutfitWeatherForDate(loc,d.dateKey); } catch(e) { activeTrip.outfitWeather[key]={error:true,source:'Weather unavailable',message:e?.message||'Unknown weather error'}; }
+    done++; save();
+  }
+  renderTrip(); toast(done ? `Weather updated for ${done} day${done===1?'':'s'}.` : 'Add a location to your itinerary days first.');
+}
+function setOutfitLocation(dayIndex,value){
+  ensureTripCollections(activeTrip); const d=activeTrip.itinerary[dayIndex]; if(!d) return;
+  const key=outfitDateKey(d);
+  if(value==='__custom__'){
+    const custom=prompt('Enter the city or location for this day:', activeTrip.outfitLocations?.[key]||d.place||'');
+    if(!custom) return;
+    value=custom.trim();
+  }
+  activeTrip.outfitLocations[key]=value; d.weatherLocation=value; save(); renderTrip();
+}
+
+function tabContent(t){
+  ensureTripCollections(t);
+  if(activeTab==='todo') return renderChecklistPanel('todo');
+  if(activeTab==='packing') return renderChecklistPanel('packing');
+  if(activeTab==='outfits') return renderOutfitPlanner(t);
+  return baseTabContent(t);
+}
+function parseTripDateRange(text){
+  const months={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11,jan:0,feb:1,mar:2,apr:3,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11};
+  const m=String(text||'').trim().match(/^\s*([A-Za-z]+)\s+(\d{1,2})(?:,?\s*(\d{4}))?\s*(?:-|–|—|to)\s*(?:([A-Za-z]+)\s+)?(\d{1,2})(?:,?\s*(\d{4}))?\s*$/i);
+  if(!m) return null;
+  const sm=months[m[1].toLowerCase()], em=months[(m[4]||m[1]).toLowerCase()]; if(sm===undefined||em===undefined) return null;
+  let sy=+(m[3]||m[6]||new Date().getFullYear()), ey=+(m[6]||m[3]||sy); if(!m[6]&&em<sm) ey=sy+1;
+  const start=new Date(sy,sm,+m[2]), end=new Date(ey,em,+m[5]); if(isNaN(start)||isNaN(end)||end<start) return null; return {start,end};
+}
+function syncItineraryToTripDates(shouldSave=true){
+  const r=parseTripDateRange(activeTrip.dates);
+  if(!r) return false;
+  ensureTripCollections(activeTrip);
+  const old=Array.isArray(activeTrip.itinerary)?activeTrip.itinerary:[];
+  const map=new Map(old.map(d=>[d.dateKey || `${String(d.month||'').toUpperCase()}-${d.day}`,d]));
+  const arr=[];
+  for(let d=new Date(r.start); d<=r.end; d.setDate(d.getDate()+1)){
+    const month=d.toLocaleString('en-US',{month:'short'}).toUpperCase();
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const existing=map.get(key) || map.get(`${month}-${d.getDate()}`);
+    arr.push(existing || {dateKey:key,month,day:String(d.getDate()),place:'',events:[]});
+    if(existing) existing.dateKey=key;
+  }
+  activeTrip.itinerary=arr;
+  if(shouldSave) save();
+  return true;
+}
+function updateTripDates(value){ activeTrip.dates=value; syncItineraryToTripDates(); save(); renderTrip(); }
+function addDay(){ ensureTripCollections(activeTrip); const last=activeTrip.itinerary.at(-1)||{}; activeTrip.itinerary.push({month:last.month||'DAY',day:last.day?String(Number(last.day)+1):String(activeTrip.itinerary.length+1),place:'',events:[]}); save();renderTrip(); }
+function addJournal(){ ensureTripCollections(activeTrip); activeTrip.journal.push({id:'j_'+Date.now(),title:'New Entry',date:'',location:'',photos:[],photo:'',note:'',summary:''});save();renderTrip(); }
+function journalPhotos(j){ return Array.isArray(j.photos)&&j.photos.length?j.photos:(j.photo?[j.photo]:[]); }
+
+</script>
+</body>
+</html>
