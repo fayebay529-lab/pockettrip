@@ -30,7 +30,7 @@ jobs:
               helper = '''function isUuid(value) {\n  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);\n}\n\n'''
               s = s.replace(marker, helper + marker, 1)
 
-          save_block = '''async function saveTripToCloud(trip, silent=false) {\n  if (!cloudReady || !currentUser || !trip) return false;\n  const payload = JSON.parse(JSON.stringify(trip));\n  delete payload._updatedAt;\n  payload.owner = trip.owner || currentUser;\n  payload.collaborators = payload.collaborators || [];\n\n  if (!isUuid(trip.id)) {\n    const oldId = trip.id;\n    const cloudId = crypto.randomUUID();\n    trip.id = cloudId;\n    payload.id = cloudId;\n    if (activeTrip && activeTrip.id === oldId) activeTrip.id = cloudId;\n  }\n\n  const { error } = await sb.from('trips').upsert({\n    id: trip.id,\n    owner_id: trip.owner || currentUser,\n    name: payload.name || 'Untitled Trip',\n    data: payload,\n    updated_at: new Date().toISOString()\n  }, { onConflict: 'id' });\n\n  if (error) {\n    console.error('Cloud trip save failed:', error);\n    if (!silent) toast('Cloud save failed: ' + error.message);\n    return false;\n  }\n  return true;\n}\n'''
+          save_block = '''async function saveTripToCloud(trip, silent=false) {\n  const authOwner = currentAuthUser?.id || null;\n  if (!cloudReady || !authOwner || !trip) return false;\n  const payload = JSON.parse(JSON.stringify(trip));\n  delete payload._updatedAt;\n  payload.owner = authOwner;\n  payload.collaborators = payload.collaborators || [];\n\n  if (!isUuid(trip.id)) {\n    const oldId = trip.id;\n    const cloudId = crypto.randomUUID();\n    trip.id = cloudId;\n    payload.id = cloudId;\n    if (activeTrip && activeTrip.id === oldId) activeTrip.id = cloudId;\n  }\n\n  const { error } = await sb.from('trips').upsert({\n    id: trip.id,\n    owner_id: authOwner,\n    name: payload.name || 'Untitled Trip',\n    data: payload,\n    updated_at: new Date().toISOString()\n  }, { onConflict: 'id' });\n\n  if (error) {\n    console.error('Cloud trip save failed:', error);\n    if (!silent) toast('Cloud save failed: ' + error.message);\n    return false;\n  }\n  return true;\n}\n'''
           s, n = re.subn(r'async function saveTripToCloud\(trip, silent=false\) \{.*?\n\}\n(?=\nfunction save\(\))', save_block, s, count=1, flags=re.S)
           if n != 1:
               raise SystemExit('Could not locate saveTripToCloud()')
@@ -60,7 +60,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No source changes needed"
           else
-            git commit -m "Fix Pockettrip cloud trip saves"
+            git commit -m "Use authenticated user ID for cloud trip ownership"
             git push
           fi
 
