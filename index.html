@@ -1403,7 +1403,7 @@ async function saveTripToCloud(trip, silent=false) {
   if (!cloudReady || !currentUser || !trip) return false;
   const payload = JSON.parse(JSON.stringify(trip));
   delete payload._updatedAt;
-  payload.owner = trip.owner || currentUser;
+  payload.owner = currentAuthUser?.id || currentUser;
   payload.collaborators = payload.collaborators || [];
 
   if (!isUuid(trip.id)) {
@@ -1416,7 +1416,7 @@ async function saveTripToCloud(trip, silent=false) {
 
   const { error } = await sb.from('trips').upsert({
     id: trip.id,
-    owner_id: trip.owner || currentUser,
+    owner_id: currentAuthUser?.id || currentUser,
     name: payload.name || 'Untitled Trip',
     data: payload,
     updated_at: new Date().toISOString()
