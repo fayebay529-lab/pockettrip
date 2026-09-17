@@ -63,3 +63,5 @@ jobs:
             git commit -m "Fix Pockettrip cloud trip saves"
             git push
           fi
+
+# Trigger a normal Pages rebuild after the bot commit.
