@@ -1395,19 +1395,45 @@ function subscribeToTrips() {
     .subscribe();
 }
 
+function isUuid(value) {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 async function saveTripToCloud(trip, silent=false) {
-  if (!cloudReady || !currentUser || !trip) return;
+  if (!cloudReady || !currentUser || !trip) return false;
   const payload = JSON.parse(JSON.stringify(trip));
   delete payload._updatedAt;
   payload.owner = trip.owner || currentUser;
   payload.collaborators = payload.collaborators || [];
-  const { error } = await sb.from('trips').upsert({ id: trip.id || crypto.randomUUID(), owner_id: trip.owner || currentUser, name: payload.name || 'Untitled Trip', data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-  if (error) { console.error(error); if (!silent) toast('Cloud save failed'); }
+
+  if (!isUuid(trip.id)) {
+    const oldId = trip.id;
+    const cloudId = crypto.randomUUID();
+    trip.id = cloudId;
+    payload.id = cloudId;
+    if (activeTrip && activeTrip.id === oldId) activeTrip.id = cloudId;
+  }
+
+  const { error } = await sb.from('trips').upsert({
+    id: trip.id,
+    owner_id: trip.owner || currentUser,
+    name: payload.name || 'Untitled Trip',
+    data: payload,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'id' });
+
+  if (error) {
+    console.error('Cloud trip save failed:', error);
+    if (!silent) toast('Cloud save failed: ' + error.message);
+    return false;
+  }
+  return true;
 }
 
-function save() {
+async function save() {
   localStorage.setItem(KEY + '_tags', JSON.stringify(customTags));
-  if (activeTrip && cloudReady) saveTripToCloud(activeTrip);
+  if (activeTrip && cloudReady) return await saveTripToCloud(activeTrip);
+  return false;
 }
 
 function toast(msg) {
@@ -2458,7 +2484,7 @@ function deleteJournal(i) { activeTrip.journal.splice(i, 1); save(); renderTrip(
 function addExpense() { activeTrip.expenses.push({ id: 'ex_'+Date.now(), title: 'Expense', category: 'General', amount: 0, planned: 0 }); save(); renderTrip(); }
 function deleteExpense(i) { activeTrip.expenses.splice(i, 1); save(); renderTrip(); }
 
-function addNewTrip() {
+async function addNewTrip() {
   if (!currentUser) return;
   const name = prompt('Trip Name:');
   if (!name) return;
@@ -2488,7 +2514,7 @@ function addNewTrip() {
   };
   newT.activePackingListId = newT.packingLists[0].id;
   trips.push(newT);
-  save();
+  await save();
   openTrip(newT.id);
   toast('New trip created!');
 }
