@@ -1400,12 +1400,25 @@ function isUuid(value) {
 }
 
 async function saveTripToCloud(trip, silent=false) {
-  if (!cloudReady || !currentUser || !trip) return false;
+  if (!cloudReady || !trip) return false;
+
+  // Always get the authenticated Supabase user directly. This is the UUID
+  // that the trips RLS policy expects in owner_id.
+  const { data: authData, error: authError } = await sb.auth.getUser();
+  const authOwner = authData?.user?.id || currentAuthUser?.id || null;
+
+  if (authError || !authOwner) {
+    console.error('Cloud trip save could not identify the authenticated user:', authError);
+    if (!silent) toast('Cloud save failed: Please sign in again.');
+    return false;
+  }
+
   const payload = JSON.parse(JSON.stringify(trip));
   delete payload._updatedAt;
-  payload.owner = currentAuthUser?.id || currentUser;
+  payload.owner = authOwner;
   payload.collaborators = payload.collaborators || [];
 
+  // New trips already use UUIDs. Convert older/local IDs when necessary.
   if (!isUuid(trip.id)) {
     const oldId = trip.id;
     const cloudId = crypto.randomUUID();
@@ -1416,7 +1429,7 @@ async function saveTripToCloud(trip, silent=false) {
 
   const { error } = await sb.from('trips').upsert({
     id: trip.id,
-    owner_id: currentAuthUser?.id || currentUser,
+    owner_id: authOwner,
     name: payload.name || 'Untitled Trip',
     data: payload,
     updated_at: new Date().toISOString()
@@ -1427,13 +1440,15 @@ async function saveTripToCloud(trip, silent=false) {
     if (!silent) toast('Cloud save failed: ' + error.message);
     return false;
   }
+
+  // Keep the local trip owner synchronized with the authenticated account.
+  trip.owner = authOwner;
   return true;
 }
 
 async function save() {
   localStorage.setItem(KEY + '_tags', JSON.stringify(customTags));
-  if (activeTrip && cloudReady) return await saveTripToCloud(activeTrip);
-  return false;
+  if (activeTrip && cloudReady) await saveTripToCloud(activeTrip);
 }
 
 function toast(msg) {
@@ -2489,7 +2504,7 @@ async function addNewTrip() {
   const name = prompt('Trip Name:');
   if (!name) return;
   const newT = {
-    id: 'trip_' + Date.now(),
+    id: crypto.randomUUID(),
     owner: currentUser,
     collaborators: [],
     name,
