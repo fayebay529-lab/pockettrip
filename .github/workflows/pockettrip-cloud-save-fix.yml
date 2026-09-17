@@ -16,41 +16,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Patch cloud save flow
+      - name: Patch cloud ownership
         shell: python
         run: |
           from pathlib import Path
-          import re
-
           path = Path('index.html')
           s = path.read_text(encoding='utf-8')
-
-          if 'function isUuid(' not in s:
-              marker = 'async function saveTripToCloud'
-              helper = '''function isUuid(value) {\n  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);\n}\n\n'''
-              s = s.replace(marker, helper + marker, 1)
-
-          save_block = '''async function saveTripToCloud(trip, silent=false) {\n  const authOwner = currentAuthUser?.id || null;\n  if (!cloudReady || !authOwner || !trip) return false;\n  const payload = JSON.parse(JSON.stringify(trip));\n  delete payload._updatedAt;\n  payload.owner = authOwner;\n  payload.collaborators = payload.collaborators || [];\n\n  if (!isUuid(trip.id)) {\n    const oldId = trip.id;\n    const cloudId = crypto.randomUUID();\n    trip.id = cloudId;\n    payload.id = cloudId;\n    if (activeTrip && activeTrip.id === oldId) activeTrip.id = cloudId;\n  }\n\n  const { error } = await sb.from('trips').upsert({\n    id: trip.id,\n    owner_id: authOwner,\n    name: payload.name || 'Untitled Trip',\n    data: payload,\n    updated_at: new Date().toISOString()\n  }, { onConflict: 'id' });\n\n  if (error) {\n    console.error('Cloud trip save failed:', error);\n    if (!silent) toast('Cloud save failed: ' + error.message);\n    return false;\n  }\n  return true;\n}\n'''
-          s, n = re.subn(r'async function saveTripToCloud\(trip, silent=false\) \{.*?\n\}\n(?=\nfunction save\(\))', save_block, s, count=1, flags=re.S)
-          if n != 1:
-              raise SystemExit('Could not locate saveTripToCloud()')
-
-          save_block2 = '''async function save() {\n  localStorage.setItem(KEY + '_tags', JSON.stringify(customTags));\n  if (activeTrip && cloudReady) return await saveTripToCloud(activeTrip);\n  return false;\n}'''
-          s, n = re.subn(r'function save\(\) \{.*?\n\}', save_block2, s, count=1, flags=re.S)
-          if n != 1:
-              raise SystemExit('Could not locate save()')
-
-          s, n = re.subn(r'function addNewTrip\(\) \{', 'async function addNewTrip() {', s, count=1)
-          if n != 1:
-              raise SystemExit('Could not locate addNewTrip()')
-          old = '  trips.push(newT);\n  save();\n  openTrip(newT.id);'
-          new = '  trips.push(newT);\n  await save();\n  openTrip(newT.id);'
-          if old not in s:
-              raise SystemExit('Could not locate new-trip save sequence')
-          s = s.replace(old, new, 1)
-
+          old1 = '  payload.owner = trip.owner || currentUser;'
+          new1 = '  payload.owner = currentAuthUser?.id || currentUser;'
+          old2 = '    owner_id: trip.owner || currentUser,'
+          new2 = '    owner_id: currentAuthUser?.id || currentUser,'
+          changed = False
+          if old1 in s:
+              s = s.replace(old1, new1, 1)
+              changed = True
+          if old2 in s:
+              s = s.replace(old2, new2, 1)
+              changed = True
+          if not changed:
+              raise SystemExit('Could not locate cloud ownership lines')
           path.write_text(s, encoding='utf-8')
-          print('Patched index.html')
+          print('Patched authenticated owner ID')
 
       - name: Commit patched index
         run: |
@@ -63,5 +49,3 @@ jobs:
             git commit -m "Use authenticated user ID for cloud trip ownership"
             git push
           fi
-
-# Trigger a normal Pages rebuild after the bot commit.
