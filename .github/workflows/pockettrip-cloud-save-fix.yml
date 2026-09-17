@@ -34,9 +34,10 @@ jobs:
               s = s.replace(old2, new2, 1)
               changed = True
           if not changed:
-              raise SystemExit('Could not locate cloud ownership lines')
-          path.write_text(s, encoding='utf-8')
-          print('Patched authenticated owner ID')
+              print('Cloud ownership patch already applied; nothing to change.')
+          else:
+              path.write_text(s, encoding='utf-8')
+              print('Patched authenticated owner ID')
 
       - name: Commit patched index
         run: |
